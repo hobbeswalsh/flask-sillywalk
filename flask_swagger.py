@@ -1,6 +1,7 @@
 from collections import defaultdict
 import json
 import lxml
+from urlparse import urlparse
 
 try:
     from flask import _app_ctx_stack as stack
@@ -14,9 +15,10 @@ SUPPORTED_FORMATS = ["xml", "json"]
 
 
 class SwaggerApiRegistry(object):
-    def __init__(self, app=None, basepath="/"):
-        self.basepath = basepath
-        self.r = defaultdict(set)
+    def __init__(self, app=None, baseurl="http://localhost/"):
+        self.baseurl = baseurl
+        self.basepath = urlparse(self.baseurl).path
+        self.r = defaultdict(dict)
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -28,6 +30,7 @@ class SwaggerApiRegistry(object):
                         self.basepath.rstrip("/"),
                         fmt),
                     "resources",
+                    ## XXX json / xml
                     self.jsonify(self.resources))
 
     def jsonify(self, f):
@@ -39,16 +42,16 @@ class SwaggerApiRegistry(object):
         resources = {
                 "apiVersion": __APIVERSION__,
                 "swaggerVersion": __SWAGGERVERSION__,
-                "basePath": self.basepath,
+                "basePath": self.baseurl,
                 "apis": list()}
-        for resource in self.r.keys():
+        for resource in self.r.keys().keys():
             resources["apis"].append({
                     "path": resource + ".{format}",
                     "description": "" })
         return resources
 
 
-    def register(self, path, methods=["GET"], properties={}, parameters=[]):
+    def register(self, path, method="GET", properties={}, parameters=[]):
         def inner_func(f):
             if self.app is None:
                 logger.error("You need to initialize {0} with a Flask app".format(
@@ -60,42 +63,78 @@ class SwaggerApiRegistry(object):
                 path,
                 f.__name__,
                 f,
-                methods=methods)
+                methods=[method])
 
-            api_method = ApiEndpoint(
+            api = Api(
                 method=f,
-                path=path.replace(self.basepath, "/"),
-                httpmethod=methods,
+                path=path.replace(self.basepath, ""),
+                httpmethod=method,
                 properties=properties,
                 parameters=parameters)
 
-            self.r[api_method.resource].add(api_method)
+            if api.resource not in self.app.view_functions:
+                for fmt in SUPPORTED_FORMATS:
+                    self.app.add_url_rule(
+                            "{0}/{1}.{2}".format(
+                                self.basepath.rstrip("/"),
+                                api.resource,
+                                fmt),
+                            api.resource,
+                            ## XXX json / xml
+                            self.show_resource(api.resource))
+
+            if self.r[api.resource].get(api.path) is None:
+                self.r[api.resource][api.path] = list()
+            self.r[api.resource][api.path].append(api)
 
         return inner_func
 
 
-class ApiEndpoint(object):
+    def show_resource(self, resource):
+        def inner_func():
+            return_value = {
+                    "resourcePath": resource.rstrip("/"),
+                    "apiVersion": __APIVERSION__,
+                    "swaggerVersion": __SWAGGERVERSION__,
+                    "basePath": self.baseurl,
+                    "apis": list(),
+                    "models": list()
+            }
+            resource_map = self.r.get(resource)
+            for path, apis in resource_map.items():
+                api_object = {
+                        "path": path,
+                        "description": "",
+                        "operations": list()}
+                for api in apis:
+                    api_object["operations"].append(api.document())
+                return_value["apis"].append(api_object)
+            return json.dumps(return_value)
+        return inner_func
+
+
+class Api(object):
 
     def __init__(self, method, path, httpmethod, properties={}, parameters=[]):
 
         self.method = method
         self.httpmethod = httpmethod
-        self.path = path
+        self.path = path.replace("<", "{").replace(">", "}")
         self.properties = properties
         self.parameters = parameters
-        self.description = self.method.__doc__
+        self.summary = self.method.__doc__ if self.method.__doc__ is not None else ""
         self.resource = self.path.lstrip("/").split("/")[0]
 
     # See https://github.com/wordnik/swagger-core/wiki/API-Declaration
     def document(self):
         return {
             "path": self.path,
-            "description": self.description,
+            "summary": self.summary,
             "parameters": self.parameters,
             "properties": self.properties,
-            "httpmethod": self.httpmethod
+            "httpMethod": self.httpmethod
         }
 
     def __hash__(self):
-        return hash("{0} {1}".format(self.method, self.path))
+        return hash(self.path)
 
