@@ -38,8 +38,8 @@ instantiate a SwaggerApiRegistry, which will keep track of all your API
 endpoints and documentation.
 
 ```python
-from flask import Flaskfrom flask_sillywalk import SwaggerApiRegistry,
-  ApiParameter, ApiErrorResponse
+from flask import Flask
+from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 app = Flask("my_api")
 registry = SwaggerApiRegistry(
