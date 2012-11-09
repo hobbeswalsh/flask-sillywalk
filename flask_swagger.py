@@ -1,6 +1,6 @@
-from collections import defaultdict
+import inspect
 import json
-import lxml
+from collections import defaultdict
 from urlparse import urlparse
 
 try:
@@ -11,7 +11,11 @@ except ImportError:
 
 __APIVERSION__ = "1.0"
 __SWAGGERVERSION__ = "1.0"
-SUPPORTED_FORMATS = ["xml", "json"]
+SUPPORTED_FORMATS = ["json"]
+
+
+class SwaggerRegistryError(Exception):
+    pass
 
 
 class SwaggerApiRegistry(object):
@@ -19,6 +23,7 @@ class SwaggerApiRegistry(object):
         self.baseurl = baseurl
         self.basepath = urlparse(self.baseurl).path
         self.r = defaultdict(dict)
+        self.models = defaultdict(dict)
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -30,7 +35,6 @@ class SwaggerApiRegistry(object):
                         self.basepath.rstrip("/"),
                         fmt),
                     "resources",
-                    ## XXX json / xml
                     self.jsonify(self.resources))
 
     def jsonify(self, f):
@@ -43,22 +47,51 @@ class SwaggerApiRegistry(object):
                 "apiVersion": __APIVERSION__,
                 "swaggerVersion": __SWAGGERVERSION__,
                 "basePath": self.baseurl,
+                "models": dict(),
                 "apis": list()}
-        for resource in self.r.keys().keys():
+        for resource in self.r.keys():
             resources["apis"].append({
                     "path": resource + ".{format}",
                     "description": "" })
+        for k, v in self.models.items():
+            resources["models"][k] = v
         return resources
 
 
-    def register(self, path, method="GET", properties={}, parameters=[]):
+    def registerModel(self, c, *args, **kwargs):
+        def inner_func(*args, **kwargs):
+            if self.app is None:
+                raise SwaggerRegistryError(
+                    "You need to initialize {0} with a Flask app".format(
+                        self.__class__.__name__))
+            return c(*args, **kwargs)
+        self.models[c.__name__] = {
+                "id": c.__name__,
+                "properties": dict()}
+        argspec = inspect.getargspec(c.__init__)
+        argspec.args.remove("self")
+        if argspec.defaults:
+            defaults = zip(argspec.args[-len(argspec.defaults):], argspec.defaults)
+        for arg in argspec.args[:-len(defaults)]:
+            self.models[c.__name__]["properties"][arg] = {"required": True}
+        for k, v in defaults:
+            self.models[c.__name__]["properties"][k] = {
+                    "required": False,
+                    "default": v}
+        return inner_func
+
+    def register(
+            self,
+            path,
+            method="GET",
+            parameters=[],
+            errorResponses=[]):
         def inner_func(f):
             if self.app is None:
-                logger.error("You need to initialize {0} with a Flask app".format(
-                    self.__class__.__name__))
-                return f
+                raise SwaggerRegistryError(
+                    "You need to initialize {0} with a Flask app".format(
+                        self.__class__.__name__))
 
-            ## how to do .json and .xml
             self.app.add_url_rule(
                 path,
                 f.__name__,
@@ -68,9 +101,9 @@ class SwaggerApiRegistry(object):
             api = Api(
                 method=f,
                 path=path.replace(self.basepath, ""),
-                httpmethod=method,
-                properties=properties,
-                parameters=parameters)
+                httpMethod=method,
+                params=parameters,
+                errorResponses=errorResponses)
 
             if api.resource not in self.app.view_functions:
                 for fmt in SUPPORTED_FORMATS:
@@ -80,7 +113,6 @@ class SwaggerApiRegistry(object):
                                 api.resource,
                                 fmt),
                             api.resource,
-                            ## XXX json / xml
                             self.show_resource(api.resource))
 
             if self.r[api.resource].get(api.path) is None:
@@ -113,28 +145,67 @@ class SwaggerApiRegistry(object):
         return inner_func
 
 
-class Api(object):
+class SwaggerDocumentable(object):
+    def document(self):
+        return self.__dict__
 
-    def __init__(self, method, path, httpmethod, properties={}, parameters=[]):
+class Api(SwaggerDocumentable):
+    def __init__(
+            self,
+            method,
+            path,
+            httpMethod,
+            params=None,
+            errorResponses=None):
 
-        self.method = method
-        self.httpmethod = httpmethod
-        self.path = path.replace("<", "{").replace(">", "}")
-        self.properties = properties
-        self.parameters = parameters
-        self.summary = self.method.__doc__ if self.method.__doc__ is not None else ""
-        self.resource = self.path.lstrip("/").split("/")[0]
+        self.httpMethod = httpMethod
+        self.summary = method.__doc__ if method.__doc__ is not None else ""
+        self.resource = path.lstrip("/").split("/")[0]
+        self.path = path.replace("<", "{").replace(">", "}").replace(self.resource, self.resource + ".{format}")
+        self.parameters = [] if params is None else params
+        self.errorResponses = [] if errorResponses is None else errorResponses
 
     # See https://github.com/wordnik/swagger-core/wiki/API-Declaration
     def document(self):
-        return {
-            "path": self.path,
-            "summary": self.summary,
-            "parameters": self.parameters,
-            "properties": self.properties,
-            "httpMethod": self.httpmethod
-        }
+        ret = self.__dict__.copy()
+        ## need to serialize these guys
+        ret["parameters"] = [p.document() for p in self.params]
+        ret["errorResponses"] = [e.document() for e in self.errorResponses]
+        return ret
 
     def __hash__(self):
         return hash(self.path)
+
+
+class ApiParameter(SwaggerDocumentable):
+    def __init__(
+            self,
+            name,
+            description,
+            required,
+            dataType,
+            paramType,
+            allowMultiple=False):
+        self.name = name
+        self.description = description
+        self.required = required
+        self.dataType = dataType
+        self.paramType = paramType
+        self.allowMultiple = allowMultiple
+
+    def document(self):
+        return self.__dict__
+
+class ImplicitApiParameter(ApiParameter):
+    def __init__(self, *args, **kwargs):
+        if "default_value" not in kwargs:
+            raise TypeError("You need to provide an implicit parameter with a default value.")
+        super(ImplicitApiParameter, self).__init__(*args, **kwargs)
+        self.defaultValue = kwargs.get("default_value")
+
+
+class ApiErrorResponse(SwaggerDocumentable):
+    def __init__(self, code, reason):
+        self.reason = reason
+        self.code = code
 
