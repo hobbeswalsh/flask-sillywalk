@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_swagger import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
+from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 
 app = Flask("foobar")
