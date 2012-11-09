@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from flask import Flask
 from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
@@ -59,7 +60,7 @@ def get_a_holy_hand_grenade():
         ApiParameter(
             name="target",
             description="At whom should I thrown the hand grenade?",
-            required=True,
+            required=False,
             dataType="str",
             paramType="query",
             allowMultiple=False),
