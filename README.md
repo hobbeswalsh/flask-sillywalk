@@ -58,30 +58,30 @@ register a GET mthod with no possible parameters. In order to document a
 method with parameters, we can feed the @register function some
 parameters.
 
-    ```python
-    @register("/api/v1/cheese/random")
-    def get_random_cheese():
-      """Fetch a random Cheese from the database.
-      Throws OutOfCheeseException if this is not a cheese shop."""
-      return htmlify(db.cheeses.random())
+```python
+@register("/api/v1/cheese/random")
+def get_random_cheese():
+  """Fetch a random Cheese from the database.
+  Throws OutOfCheeseException if this is not a cheese shop."""
+  return htmlify(db.cheeses.random())
 
-    @register("/aoi/v1/cheese/<cheeseName>",
-      parameters=[
-        ApiParameter(
-            name="cheeseName",
-            description="The name of the cheese to fetch",
-            required=True,
-            dataType="str",
-            paramType="path",
-            allowMultiple=False)
-      ],
-      errorResponses=[
-        ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
-      ])
-    def get_cheese(cheeseName):
-      """Gets a single cheese from the database."""
-      return htmlify(db.cheeses.fetch(name=cheeseName))
-    ```
+@register("/aoi/v1/cheese/<cheeseName>",
+  parameters=[
+    ApiParameter(
+        name="cheeseName",
+        description="The name of the cheese to fetch",
+        required=True,
+        dataType="str",
+        paramType="path",
+        allowMultiple=False)
+  ],
+  errorResponses=[
+    ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
+  ])
+def get_cheese(cheeseName):
+  """Gets a single cheese from the database."""
+  return htmlify(db.cheeses.fetch(name=cheeseName))
+```
 
 Now, if you navigate to http://localhost:5000/api/v1/resources.json you
 should see te automatic API documentation. See documentation for all the
