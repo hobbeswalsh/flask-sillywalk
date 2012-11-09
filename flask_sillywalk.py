@@ -161,7 +161,7 @@ class Api(SwaggerDocumentable):
         self.httpMethod = httpMethod
         self.summary = method.__doc__ if method.__doc__ is not None else ""
         self.resource = path.lstrip("/").split("/")[0]
-        self.path = path.replace("<", "{").replace(">", "}").replace(self.resource, self.resource + ".{format}")
+        self.path = path.replace("<", "{").replace(">", "}").replace(self.resource, self.resource + ".{format}", 1)
         self.parameters = [] if params is None else params
         self.errorResponses = [] if errorResponses is None else errorResponses
 
@@ -169,7 +169,7 @@ class Api(SwaggerDocumentable):
     def document(self):
         ret = self.__dict__.copy()
         ## need to serialize these guys
-        ret["parameters"] = [p.document() for p in self.params]
+        ret["parameters"] = [p.document() for p in self.parameters]
         ret["errorResponses"] = [e.document() for e in self.errorResponses]
         return ret
 

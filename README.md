@@ -37,12 +37,60 @@ I'm glad you asked. In order to use this code, you need to first
 instantiate a SwaggerApiRegistry, which will keep track of all your API
 endpoints and documentation.
 
-  from flask import Flaskfrom flask_sillywalk import SwaggerApiRegistry,
-    ApiParameter, ApiErrorResponse
+    from flask import Flaskfrom flask_sillywalk import SwaggerApiRegistry,
+      ApiParameter, ApiErrorResponse
 
-  app = Flask("my_api")
-  registry = SwaggerApiRegistry(
-    app,
-    baseurl="http://my-api-site.com/api/v1")
-  register = registry.register
-  registerModel = registry.registerModel
+    app = Flask("my_api")
+    registry = SwaggerApiRegistry(
+      app,
+      baseurl="http://localhost:5000/api/v1")
+    register = registry.register
+    registerModel = registry.registerModel
+
+Then, instead of using the "@app.route" decorator that you're used to
+using with Flask, you use the "register" decorator you defined above (or
+"registerModel" if you're registering a class that describes a possible
+API return value).
+
+Now that we've got an API registry, we can register some functions. The
+@register decorator, when just given a path (like @app.route), will
+register a GET mthod with no possible parameters. In order to document a
+method with parameters, we can feed the @register function some
+parameters.
+
+    @register("/api/v1/cheese/random")
+    def get_random_cheese():
+      """Fetch a random Cheese from the database.
+      Throws OutOfCheeseException if this is not a cheese shop."""
+      return htmlify(db.cheeses.random())
+
+    @register("/aoi/v1/cheese/<cheeseName>",
+      parameters=[
+        ApiParameter(
+            name="cheeseName",
+            description="The name of the cheese to fetch",
+            required=True,
+            dataType="str",
+            paramType="path",
+            allowMultiple=False)
+      ],
+      errorResponses=[
+        ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
+      ])
+    def get_cheese(cheeseName):
+      """Gets a single cheese from the database."""
+      return htmlify(db.cheeses.fetch(name=cheeseName))
+
+Now, if you navigate to http://localhost:5000/api/v1/resources.json you
+should see te automatic API documentation. See documentation for all the
+cheese endpoints at http://localhost:5000/api/v1/cheese.json
+
+
+What's left to do?
+------------------
+
+Well, lots, actually. This release:
+
+* Doesn't support XML (but do we really want to?)
+* Doesn't support the full swagger spec (e.g. "type" in data models
+* 
