@@ -37,15 +37,17 @@ I'm glad you asked. In order to use this code, you need to first
 instantiate a SwaggerApiRegistry, which will keep track of all your API
 endpoints and documentation.
 
-    from flask import Flaskfrom flask_sillywalk import SwaggerApiRegistry,
-      ApiParameter, ApiErrorResponse
+```python
+from flask import Flaskfrom flask_sillywalk import SwaggerApiRegistry,
+  ApiParameter, ApiErrorResponse
 
-    app = Flask("my_api")
-    registry = SwaggerApiRegistry(
-      app,
-      baseurl="http://localhost:5000/api/v1")
-    register = registry.register
-    registerModel = registry.registerModel
+app = Flask("my_api")
+registry = SwaggerApiRegistry(
+  app,
+  baseurl="http://localhost:5000/api/v1")
+register = registry.register
+registerModel = registry.registerModel
+```
 
 Then, instead of using the "@app.route" decorator that you're used to
 using with Flask, you use the "register" decorator you defined above (or
