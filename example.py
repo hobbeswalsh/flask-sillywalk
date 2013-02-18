@@ -41,10 +41,10 @@ def get_cheese(cheeseName):
   """Gets cheese, just like the name says."""
   return "Cheese {0}".format(cheeseName)
 
-@register("/api/v1/holyHandGrenade")
-def get_a_holy_hand_grenade():
-  """Gets a holy hand grenade, just like the name says."""
-  return "The holy hand grenade"
+@register("/api/v1/holyHandGrenade/<number>")
+def get_a_holy_hand_grenade(number):
+  """Gets one or more holy hand grenades, just like the name says."""
+  return "The holy hand grenade" * number
 
 @register(
     "/api/v1/holyHandGrenade/<number>",
@@ -69,4 +69,4 @@ def toss_the_grenade(number):
   """Toss the holy hand grenade after {number} seconds."""
   return "Waiting {0} seconds to toss the grenade.".format(number)
 
-app.run(debug=True)
+app.run(host="0.0.0.0", debug=True)
