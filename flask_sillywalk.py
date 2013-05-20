@@ -162,7 +162,7 @@ class Api(SwaggerDocumentable):
         self.httpMethod = httpMethod
         self.summary = method.__doc__ if method.__doc__ is not None else ""
         self.resource = path.lstrip("/").split("/")[0]
-        self.path = path.replace("<", "{").replace(">", "}").replace(self.resource, self.resource + ".{format}", 1)
+        self.path = path.replace("<", "{").replace(">", "}")
         self.parameters = [] if params is None else params
         self.errorResponses = [] if errorResponses is None else errorResponses
         self.nickname = "" if nickname is None else  nickname
