@@ -51,7 +51,7 @@ class SwaggerApiRegistry(object):
                 "apis": list()}
         for resource in self.r.keys():
             resources["apis"].append({
-                    "path": resource + ".{format}",
+                    "path": "/" + resource + ".{format}",
                     "description": "" })
         for k, v in self.models.items():
             resources["models"][k] = v
@@ -156,7 +156,8 @@ class Api(SwaggerDocumentable):
             path,
             httpMethod,
             params=None,
-            errorResponses=None):
+            errorResponses=None,
+            nickname=None):
 
         self.httpMethod = httpMethod
         self.summary = method.__doc__ if method.__doc__ is not None else ""
@@ -164,6 +165,7 @@ class Api(SwaggerDocumentable):
         self.path = path.replace("<", "{").replace(">", "}").replace(self.resource, self.resource + ".{format}", 1)
         self.parameters = [] if params is None else params
         self.errorResponses = [] if errorResponses is None else errorResponses
+        self.nickname = "" if nickname is None else  nickname
 
     # See https://github.com/wordnik/swagger-core/wiki/API-Declaration
     def document(self):

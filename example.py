@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask
+from flask import Flask, make_response
 from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 
@@ -68,5 +68,13 @@ def get_a_holy_hand_grenade(number):
 def toss_the_grenade(number):
   """Toss the holy hand grenade after {number} seconds."""
   return "Waiting {0} seconds to toss the grenade.".format(number)
+
+@app.after_request
+def after_request(data):
+    response = make_response(data)
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS , PUT'
+    return response
 
 app.run(host="0.0.0.0", debug=True)
