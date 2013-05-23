@@ -29,3 +29,6 @@ pip-log.txt
 include
 lib
 local
+
+## virtualenv, in case you use it
+venv
