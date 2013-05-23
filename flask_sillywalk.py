@@ -19,6 +19,7 @@ class SwaggerRegistryError(Exception):
 
 
 class SwaggerApiRegistry(object):
+
     def __init__(self, app=None, baseurl="http://localhost/"):
         self.baseurl = baseurl
         self.basepath = urlparse(self.baseurl).path
@@ -31,11 +32,11 @@ class SwaggerApiRegistry(object):
     def init_app(self, app):
         for fmt in SUPPORTED_FORMATS:
             app.add_url_rule(
-                    "{0}/resources.{1}".format(
-                        self.basepath.rstrip("/"),
-                        fmt),
-                    "resources",
-                    self.jsonify(self.resources))
+                "{0}/resources.{1}".format(
+                self.basepath.rstrip("/"),
+                fmt),
+                "resources",
+                self.jsonify(self.resources))
 
     def jsonify(self, f):
         def inner_func():
@@ -44,19 +45,18 @@ class SwaggerApiRegistry(object):
 
     def resources(self):
         resources = {
-                "apiVersion": __APIVERSION__,
-                "swaggerVersion": __SWAGGERVERSION__,
-                "basePath": self.baseurl,
-                "models": dict(),
-                "apis": list()}
+            "apiVersion": __APIVERSION__,
+            "swaggerVersion": __SWAGGERVERSION__,
+            "basePath": self.baseurl,
+            "models": dict(),
+            "apis": list()}
         for resource in self.r.keys():
             resources["apis"].append({
-                    "path": "/" + resource + ".{format}",
-                    "description": "" })
+                "path": "/" + resource + ".{format}",
+                "description": ""})
         for k, v in self.models.items():
             resources["models"][k] = v
         return resources
-
 
     def registerModel(self, c, *args, **kwargs):
         def inner_func(*args, **kwargs):
@@ -66,18 +66,19 @@ class SwaggerApiRegistry(object):
                         self.__class__.__name__))
             return c(*args, **kwargs)
         self.models[c.__name__] = {
-                "id": c.__name__,
-                "properties": dict()}
+            "id": c.__name__,
+            "properties": dict()}
         argspec = inspect.getargspec(c.__init__)
         argspec.args.remove("self")
         if argspec.defaults:
-            defaults = zip(argspec.args[-len(argspec.defaults):], argspec.defaults)
+            defaults = zip(argspec.args[-len(
+                argspec.defaults):], argspec.defaults)
         for arg in argspec.args[:-len(defaults)]:
             self.models[c.__name__]["properties"][arg] = {"required": True}
         for k, v in defaults:
             self.models[c.__name__]["properties"][k] = {
-                    "required": False,
-                    "default": v}
+                "required": False,
+                "default": v}
         return inner_func
 
     def register(
@@ -108,12 +109,12 @@ class SwaggerApiRegistry(object):
             if api.resource not in self.app.view_functions:
                 for fmt in SUPPORTED_FORMATS:
                     self.app.add_url_rule(
-                            "{0}/{1}.{2}".format(
-                                self.basepath.rstrip("/"),
-                                api.resource,
-                                fmt),
-                            api.resource,
-                            self.show_resource(api.resource))
+                        "{0}/{1}.{2}".format(
+                        self.basepath.rstrip("/"),
+                        api.resource,
+                        fmt),
+                        api.resource,
+                        self.show_resource(api.resource))
 
             if self.r[api.resource].get(api.path) is None:
                 self.r[api.resource][api.path] = list()
@@ -121,23 +122,22 @@ class SwaggerApiRegistry(object):
 
         return inner_func
 
-
     def show_resource(self, resource):
         def inner_func():
             return_value = {
-                    "resourcePath": resource.rstrip("/"),
-                    "apiVersion": __APIVERSION__,
-                    "swaggerVersion": __SWAGGERVERSION__,
-                    "basePath": self.baseurl,
-                    "apis": list(),
-                    "models": list()
+                "resourcePath": resource.rstrip("/"),
+                "apiVersion": __APIVERSION__,
+                "swaggerVersion": __SWAGGERVERSION__,
+                "basePath": self.baseurl,
+                "apis": list(),
+                "models": list()
             }
             resource_map = self.r.get(resource)
             for path, apis in resource_map.items():
                 api_object = {
-                        "path": path,
-                        "description": "",
-                        "operations": list()}
+                    "path": path,
+                    "description": "",
+                    "operations": list()}
                 for api in apis:
                     api_object["operations"].append(api.document())
                 return_value["apis"].append(api_object)
@@ -146,10 +146,13 @@ class SwaggerApiRegistry(object):
 
 
 class SwaggerDocumentable(object):
+
     def document(self):
         return self.__dict__
 
+
 class Api(SwaggerDocumentable):
+
     def __init__(
             self,
             method,
@@ -165,12 +168,12 @@ class Api(SwaggerDocumentable):
         self.path = path.replace("<", "{").replace(">", "}")
         self.parameters = [] if params is None else params
         self.errorResponses = [] if errorResponses is None else errorResponses
-        self.nickname = "" if nickname is None else  nickname
+        self.nickname = "" if nickname is None else nickname
 
     # See https://github.com/wordnik/swagger-core/wiki/API-Declaration
     def document(self):
         ret = self.__dict__.copy()
-        ## need to serialize these guys
+        # need to serialize these guys
         ret["parameters"] = [p.document() for p in self.parameters]
         ret["errorResponses"] = [e.document() for e in self.errorResponses]
         return ret
@@ -180,6 +183,7 @@ class Api(SwaggerDocumentable):
 
 
 class ApiParameter(SwaggerDocumentable):
+
     def __init__(
             self,
             name,
@@ -198,16 +202,19 @@ class ApiParameter(SwaggerDocumentable):
     def document(self):
         return self.__dict__
 
+
 class ImplicitApiParameter(ApiParameter):
+
     def __init__(self, *args, **kwargs):
         if "default_value" not in kwargs:
-            raise TypeError("You need to provide an implicit parameter with a default value.")
+            raise TypeError(
+                "You need to provide an implicit parameter with a default value.")
         super(ImplicitApiParameter, self).__init__(*args, **kwargs)
         self.defaultValue = kwargs.get("default_value")
 
 
 class ApiErrorResponse(SwaggerDocumentable):
+
     def __init__(self, code, reason):
         self.reason = reason
         self.code = code
-

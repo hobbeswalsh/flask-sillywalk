@@ -12,10 +12,13 @@ registry = SwaggerApiRegistry(app, baseurl="http://{}/api/v1".format(url))
 register = registry.register
 registerModel = registry.registerModel
 
+
 @registerModel
 class SomeCrazyClass(object):
+
     class HappyBirthdayException(Exception):
         pass
+
     def __init__(self, name, age, birthday="tomorrow"):
         self.name = name
         self.age = age
@@ -34,15 +37,15 @@ class SomeCrazyClass(object):
             required=True,
             dataType="str",
             paramType="path",
-            allowMultiple=False)
-    ],
+            allowMultiple=False)],
     errorResponses=[
         ApiErrorResponse(400, "Sorry, we're fresh out of that cheese."),
         ApiErrorResponse(418, "I'm actually a teapot")
     ])
 def get_cheese(cheeseName):
-  """Gets cheese, just like the name says."""
-  return "Sorry, we're fresh out of {0}!".format(cheeseName)
+    """Gets cheese, just like the name says."""
+    return "Sorry, we're fresh out of {0}!".format(cheeseName)
+
 
 @register(
     "/api/v1/holyHandGrenade/<number>",
@@ -56,12 +59,13 @@ def get_cheese(cheeseName):
             paramType="path",
             allowMultiple=False)])
 def get_a_holy_hand_grenade(number):
-  """Gets one or more holy hand grenades, just like the name says."""
-  return "Fetching {} holy hand grenades".format(number)
+    """Gets one or more holy hand grenades, just like the name says."""
+    return "Fetching {} holy hand grenades".format(number)
+
 
 @register(
     "/api/v1/holyHandGrenade/<number>",
-    method="PUT",
+    method="POST",
     parameters=[
         ApiParameter(
             name="number",
@@ -76,20 +80,21 @@ def get_a_holy_hand_grenade(number):
             required=False,
             dataType="str",
             paramType="query",
-            allowMultiple=False),
-    ])
+            allowMultiple=False)])
 def toss_the_grenade(number):
-  """Toss the holy hand grenade after {number} seconds."""
-  target = request.args.get("target", "FOO")
-  return "Waiting {0} seconds to toss the grenade at {}.".format(
+    """Toss the holy hand grenade after {number} seconds."""
+    target = request.args.get("target", "FOO")
+    return "Waiting {} seconds to toss the grenade at {}.".format(
         number, target)
+
 
 @app.after_request
 def after_request(data):
     response = make_response(data)
     response.headers['Content-Type'] = 'application/json'
     response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS , PUT'
+    response.headers[
+        'Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS , PUT'
     return response
 
 port = int(os.environ.get("PORT", 5000))
