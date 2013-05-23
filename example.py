@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-from flask import Flask, make_response
+from flask import Flask, make_response, query
 from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 
@@ -42,7 +42,7 @@ class SomeCrazyClass(object):
     ])
 def get_cheese(cheeseName):
   """Gets cheese, just like the name says."""
-  return "Cheese {0}".format(cheeseName)
+  return "Sorry, we're fresh out of {0}!".format(cheeseName)
 
 @register(
     "/api/v1/holyHandGrenade/<number>",
@@ -57,7 +57,7 @@ def get_cheese(cheeseName):
             allowMultiple=False)])
 def get_a_holy_hand_grenade(number):
   """Gets one or more holy hand grenades, just like the name says."""
-  return "The holy hand grenade" * number
+  return "Fetching {} holy hand grenades".format(number)
 
 @register(
     "/api/v1/holyHandGrenade/<number>",
@@ -80,7 +80,9 @@ def get_a_holy_hand_grenade(number):
     ])
 def toss_the_grenade(number):
   """Toss the holy hand grenade after {number} seconds."""
-  return "Waiting {0} seconds to toss the grenade.".format(number)
+  target = query.params.get("target", "FOO")
+  return "Waiting {0} seconds to toss the grenade at {}.".format(
+        number, target)
 
 @app.after_request
 def after_request(data):
