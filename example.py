@@ -7,7 +7,8 @@ from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 app = Flask("foobar")
 
-registry = SwaggerApiRegistry(app, baseurl="http://localhost:5000/api/v1")
+url = os.environ.get("URL", "localhost:5000")
+registry = SwaggerApiRegistry(app, baseurl="http://{}/api/v1".format(url))
 register = registry.register
 registerModel = registry.registerModel
 
