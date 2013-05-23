@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-from flask import Flask, make_response, query
+from flask import Flask, make_response, request
 from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 
@@ -80,7 +80,7 @@ def get_a_holy_hand_grenade(number):
     ])
 def toss_the_grenade(number):
   """Toss the holy hand grenade after {number} seconds."""
-  target = query.params.get("target", "FOO")
+  target = request.args.get("target", "FOO")
   return "Waiting {0} seconds to toss the grenade at {}.".format(
         number, target)
 
