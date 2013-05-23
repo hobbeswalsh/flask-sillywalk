@@ -44,7 +44,17 @@ def get_cheese(cheeseName):
   """Gets cheese, just like the name says."""
   return "Cheese {0}".format(cheeseName)
 
-@register("/api/v1/holyHandGrenade/<number>")
+@register(
+    "/api/v1/holyHandGrenade/<number>",
+    method="GET",
+    parameters=[
+        ApiParameter(
+            name="number",
+            description="The number of hand grenades to get",
+            required=True,
+            dataType="int",
+            paramType="path",
+            allowMultiple=False)])
 def get_a_holy_hand_grenade(number):
   """Gets one or more holy hand grenades, just like the name says."""
   return "The holy hand grenade" * number
