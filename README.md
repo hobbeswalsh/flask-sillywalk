@@ -86,7 +86,7 @@ def get_cheese(cheeseName):
 ```
 
 Now, if you navigate to http://localhost:5000/api/v1/resources.json you
-should see te automatic API documentation. See documentation for all the
+should see the automatic API documentation. See documentation for all the
 cheese endpoints at http://localhost:5000/api/v1/cheese.json
 
 
