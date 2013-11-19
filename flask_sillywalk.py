@@ -70,6 +70,7 @@ class SwaggerApiRegistry(object):
             "properties": dict()}
         argspec = inspect.getargspec(c.__init__)
         argspec.args.remove("self")
+        defaults = {}
         if argspec.defaults:
             defaults = zip(argspec.args[-len(
                 argspec.defaults):], argspec.defaults)
