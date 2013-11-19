@@ -86,7 +86,8 @@ class SwaggerApiRegistry(object):
             path,
             method="GET",
             parameters=[],
-            errorResponses=[]):
+            errorResponses=[],
+            notes=None):
         def inner_func(f):
             if self.app is None:
                 raise SwaggerRegistryError(
@@ -104,7 +105,8 @@ class SwaggerApiRegistry(object):
                 path=path.replace(self.basepath, ""),
                 httpMethod=method,
                 params=parameters,
-                errorResponses=errorResponses)
+                errorResponses=errorResponses,
+                notes=notes)
 
             if api.resource not in self.app.view_functions:
                 for fmt in SUPPORTED_FORMATS:
@@ -160,7 +162,8 @@ class Api(SwaggerDocumentable):
             httpMethod,
             params=None,
             errorResponses=None,
-            nickname=None):
+            nickname=None,
+            notes=None):
 
         self.httpMethod = httpMethod
         self.summary = method.__doc__ if method.__doc__ is not None else ""
@@ -169,6 +172,7 @@ class Api(SwaggerDocumentable):
         self.parameters = [] if params is None else params
         self.errorResponses = [] if errorResponses is None else errorResponses
         self.nickname = "" if nickname is None else nickname
+        self.notes = notes
 
     # See https://github.com/wordnik/swagger-core/wiki/API-Declaration
     def document(self):
