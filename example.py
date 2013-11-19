@@ -38,7 +38,6 @@ class SomeCrazyClass(object):
             dataType="str",
             paramType="path",
             allowMultiple=False)],
-
     notes='For getting cheese, you know...',
     errorResponses=[
         ApiErrorResponse(400, "Sorry, we're fresh out of that cheese."),
