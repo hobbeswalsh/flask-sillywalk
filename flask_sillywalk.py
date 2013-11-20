@@ -59,30 +59,29 @@ class SwaggerApiRegistry(object):
         return resources
 
     def registerModel(self,
-                      c,
                       type_="object"):
-        def inner_func(*args, **kwargs):
+        def inner_func(c, *args, **kwargs):
             if self.app is None:
                 raise SwaggerRegistryError(
                     "You need to initialize {0} with a Flask app".format(
                         self.__class__.__name__))
+            self.models[c.__name__] = {
+                "id": c.__name__,
+                "type": type_,
+                "properties": dict()}
+            argspec = inspect.getargspec(c.__init__)
+            argspec.args.remove("self")
+            defaults = {}
+            if argspec.defaults:
+                defaults = zip(argspec.args[-len(
+                    argspec.defaults):], argspec.defaults)
+            for arg in argspec.args[:-len(defaults)]:
+                self.models[c.__name__]["properties"][arg] = {"required": True}
+            for k, v in defaults:
+                self.models[c.__name__]["properties"][k] = {
+                    "required": False,
+                    "default": v}
             return c(*args, **kwargs)
-        self.models[c.__name__] = {
-            "id": c.__name__,
-            "type": type_,
-            "properties": dict()}
-        argspec = inspect.getargspec(c.__init__)
-        argspec.args.remove("self")
-        defaults = {}
-        if argspec.defaults:
-            defaults = zip(argspec.args[-len(
-                argspec.defaults):], argspec.defaults)
-        for arg in argspec.args[:-len(defaults)]:
-            self.models[c.__name__]["properties"][arg] = {"required": True}
-        for k, v in defaults:
-            self.models[c.__name__]["properties"][k] = {
-                "required": False,
-                "default": v}
         return inner_func
 
     def register(
