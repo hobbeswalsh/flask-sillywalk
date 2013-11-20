@@ -48,7 +48,7 @@ class SomeCrazyClass(object):
     ])
 def get_cheese(cheeseName):
     """Gets cheese, just like the name says."""
-    return {"response": "OK", "message": "Sorry, we're fresh out of {0}!".format(cheeseName)}
+    return json.dumps({"response": "OK", "message": "Sorry, we're fresh out of {0}!".format(cheeseName)})
 
 
 @register(
