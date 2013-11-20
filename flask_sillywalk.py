@@ -82,9 +82,7 @@ class SwaggerApiRegistry(object):
                 self.models[c.__name__]["required"].append(arg)
                 #self.models[c.__name__]["required"][arg] = {"required": True}
             for k, v in defaults:
-                self.models[c.__name__]["properties"][k] = {
-                    "required": False,
-                    "default": v}
+                self.models[c.__name__]["properties"][k] = {"default": v}
             return c
         return inner_func
 
