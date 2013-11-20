@@ -16,7 +16,9 @@ registerModel = registry.registerModel
 class HappyBirthdayException(Exception):
     pass
 
-@registerModel
+
+@registerModel(
+    type="Crazy")
 class SomeCrazyClass(object):
 
     def __init__(self, name, age, birthday="tomorrow"):

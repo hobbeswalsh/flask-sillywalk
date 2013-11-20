@@ -58,7 +58,9 @@ class SwaggerApiRegistry(object):
             resources["models"][k] = v
         return resources
 
-    def registerModel(self, c, *args, **kwargs):
+    def registerModel(self,
+                      c,
+                      type_="object"):
         def inner_func(*args, **kwargs):
             if self.app is None:
                 raise SwaggerRegistryError(
@@ -67,6 +69,7 @@ class SwaggerApiRegistry(object):
             return c(*args, **kwargs)
         self.models[c.__name__] = {
             "id": c.__name__,
+            "type": type_,
             "properties": dict()}
         argspec = inspect.getargspec(c.__init__)
         argspec.args.remove("self")
