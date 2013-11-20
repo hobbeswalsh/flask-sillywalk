@@ -81,7 +81,7 @@ class SwaggerApiRegistry(object):
                 self.models[c.__name__]["properties"][k] = {
                     "required": False,
                     "default": v}
-            return c(*args, **kwargs)
+            return c
         return inner_func
 
     def register(
