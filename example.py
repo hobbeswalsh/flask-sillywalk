@@ -19,6 +19,7 @@ class HappyBirthdayException(Exception):
 
 @registerModel()
 class SomeCrazyClass(object):
+    """This is just the most crazy class!"""
 
     def __init__(self, name, age, birthday="tomorrow"):
         self.name = name

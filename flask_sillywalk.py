@@ -67,6 +67,7 @@ class SwaggerApiRegistry(object):
                         self.__class__.__name__))
             self.models[c.__name__] = {
                 "id": c.__name__,
+                "description": c.__doc__ if c.__doc__ is not None else "",
                 "type": type_,
                 "properties": dict()}
             argspec = inspect.getargspec(c.__init__)
@@ -76,7 +77,10 @@ class SwaggerApiRegistry(object):
                 defaults = zip(argspec.args[-len(
                     argspec.defaults):], argspec.defaults)
             for arg in argspec.args[:-len(defaults)]:
-                self.models[c.__name__]["properties"][arg] = {"required": True}
+                if self.models[c.__name__].get("required") is None:
+                    self.models[c.__name__]["required"] = []
+                self.models[c.__name__]["required"].append(arg)
+                #self.models[c.__name__]["required"][arg] = {"required": True}
             for k, v in defaults:
                 self.models[c.__name__]["properties"][k] = {
                     "required": False,
