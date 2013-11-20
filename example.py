@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import json
 
 from flask import Flask, make_response, request
 from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
@@ -47,7 +48,7 @@ class SomeCrazyClass(object):
     ])
 def get_cheese(cheeseName):
     """Gets cheese, just like the name says."""
-    {"response": "OK", "message": "Sorry, we're fresh out of {0}!".format(cheeseName)}
+    return {"response": "OK", "message": "Sorry, we're fresh out of {0}!".format(cheeseName)}
 
 
 @register(
