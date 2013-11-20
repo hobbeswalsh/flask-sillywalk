@@ -86,6 +86,7 @@ class SwaggerApiRegistry(object):
             self,
             path,
             method="GET",
+            content_type="application/json",
             parameters=[],
             errorResponses=[],
             notes=None):
@@ -220,6 +221,6 @@ class ImplicitApiParameter(ApiParameter):
 
 class ApiErrorResponse(SwaggerDocumentable):
 
-    def __init__(self, code, reason):
-        self.reason = reason
+    def __init__(self, code, message):
+        self.message = message
         self.code = code

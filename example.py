@@ -13,11 +13,11 @@ register = registry.register
 registerModel = registry.registerModel
 
 
+class HappyBirthdayException(Exception):
+    pass
+
 @registerModel
 class SomeCrazyClass(object):
-
-    class HappyBirthdayException(Exception):
-        pass
 
     def __init__(self, name, age, birthday="tomorrow"):
         self.name = name
