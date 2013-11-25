@@ -15,10 +15,20 @@ SUPPORTED_FORMATS = ["json"]
 
 
 class SwaggerRegistryError(Exception):
+    """A Swagger registry error"""
     pass
 
 
 class SwaggerApiRegistry(object):
+    """
+    If you're going to make your Python/Flask API swagger compliant, you'll need
+    to initialize a SwaggerApiRegistry with a Flask app and a baseurl.
+
+    >>> my_app = Flask(__name__)
+    >>> registry = SwaggerApiRegistry(my_app, "http://my_url.com/api/v1")
+
+    Then you can register URLs with this class' "register" method.
+    """
 
     def __init__(self, app=None, baseurl="http://localhost/"):
         self.baseurl = baseurl
@@ -30,6 +40,10 @@ class SwaggerApiRegistry(object):
             self.init_app(self.app)
 
     def init_app(self, app):
+        """
+        Initialize the Flask app by adding the base "resources" URL. Currently only JSON
+        is supported, so this will add the URL <baseurl>/resources.json to your app.
+        """
         for fmt in SUPPORTED_FORMATS:
             app.add_url_rule(
                 "{0}/resources.{1}".format(
@@ -39,11 +53,17 @@ class SwaggerApiRegistry(object):
                 self.jsonify(self.resources))
 
     def jsonify(self, f):
+        """
+        In case we need to serialize different stuff in the future.
+        """
         def inner_func():
             return json.dumps(f())
         return inner_func
 
     def resources(self):
+        """
+        Gets all currently known API resources and serialized them.
+        """
         resources = {
             "apiVersion": __APIVERSION__,
             "swaggerVersion": __SWAGGERVERSION__,
@@ -60,6 +80,16 @@ class SwaggerApiRegistry(object):
 
     def registerModel(self,
                       type_="object"):
+        """
+        Registers a Swagger Model (object).
+
+        Usage:
+
+        >>> @my_registry.registerModel(type="Animal")
+        >>> class Dog(object):
+        >>>     def __init__(self):
+        >>>     pass
+        """
         def inner_func(c, *args, **kwargs):
             if self.app is None:
                 raise SwaggerRegistryError(
@@ -94,6 +124,28 @@ class SwaggerApiRegistry(object):
             parameters=[],
             errorResponses=[],
             notes=None):
+        """
+        Registers an API endpoint.
+
+        Usage:
+
+        >>> @my_registry.register(
+        ...     "/api/v1/cheese/<cheeseName>",
+        ...     parameters=[ApiParameter(
+        ...         name="cheeseName",
+        ...         description="The name of the cheese to fetch",
+        ...         required=True,
+        ...         dataType="str",
+        ...         paramType="path",
+        ...         allowMultiple=False)],
+        ...     notes='For getting cheese, you know...',
+        ...     errorResponses=[
+        ...         ApiErrorResponse(400, "Sorry, we're fresh out of that cheese."),
+        ...         ApiErrorResponse(418, "I'm actually a teapot")]))
+        >>> def get_cheese(cheesename):
+        >>>     # some function
+
+        """
         def inner_func(f):
             if self.app is None:
                 raise SwaggerRegistryError(
@@ -131,6 +183,9 @@ class SwaggerApiRegistry(object):
         return inner_func
 
     def show_resource(self, resource):
+        """
+        Serialize a single resource.
+        """
         def inner_func():
             return_value = {
                 "resourcePath": resource.rstrip("/"),
@@ -154,13 +209,18 @@ class SwaggerApiRegistry(object):
 
 
 class SwaggerDocumentable(object):
+    """
+    A documentable swagger object, e.g. an API endpoint, an API parameter, an API error response...
+    """
 
     def document(self):
         return self.__dict__
 
 
 class Api(SwaggerDocumentable):
-
+    """
+    A single API endpoint.
+    """
     def __init__(
             self,
             method,
@@ -193,7 +253,9 @@ class Api(SwaggerDocumentable):
 
 
 class ApiParameter(SwaggerDocumentable):
-
+    """
+    A single API parameter
+    """
     def __init__(
             self,
             name,
@@ -214,7 +276,9 @@ class ApiParameter(SwaggerDocumentable):
 
 
 class ImplicitApiParameter(ApiParameter):
-
+    """
+    Not sure what I was thinking here... --hobbeswalsh
+    """
     def __init__(self, *args, **kwargs):
         if "default_value" not in kwargs:
             raise TypeError(
@@ -224,7 +288,9 @@ class ImplicitApiParameter(ApiParameter):
 
 
 class ApiErrorResponse(SwaggerDocumentable):
-
+    """
+    An API error response.
+    """
     def __init__(self, code, message):
         self.message = message
         self.code = code
