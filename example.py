@@ -64,7 +64,7 @@ def get_cheese(cheeseName):
             allowMultiple=False)])
 def get_a_holy_hand_grenade(number):
     """Gets one or more holy hand grenades, just like the name says."""
-    return "Fetching {} holy hand grenades".format(number)
+    return json.dumps("Fetching {} holy hand grenades".format(number))
 
 
 @register(
@@ -88,8 +88,8 @@ def get_a_holy_hand_grenade(number):
 def toss_the_grenade(number):
     """Toss the holy hand grenade after {number} seconds."""
     target = request.args.get("target", "FOO")
-    return "Waiting {} seconds to toss the grenade at {}.".format(
-        number, target)
+    return json.dumps("Waiting {} seconds to toss the grenade at {}.".format(
+        number, target))
 
 
 @app.after_request
