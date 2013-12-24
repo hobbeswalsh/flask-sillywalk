@@ -9,7 +9,6 @@ except ImportError:
     from flask import _request_ctx_stack as stack
 
 
-__APIVERSION__ = "1.0"
 __SWAGGERVERSION__ = "1.0"
 SUPPORTED_FORMATS = ["json"]
 
@@ -30,7 +29,8 @@ class SwaggerApiRegistry(object):
     Then you can register URLs with this class' "register" method.
     """
 
-    def __init__(self, app=None, baseurl="http://localhost/"):
+    def __init__(self, app=None, baseurl="http://localhost/",
+                 api_version="1.0"):
         self.baseurl = baseurl
         self.basepath = urlparse(self.baseurl).path
         self.r = defaultdict(dict)
