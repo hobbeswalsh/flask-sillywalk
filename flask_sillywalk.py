@@ -34,6 +34,7 @@ class SwaggerApiRegistry(object):
     def __init__(self, app=None, baseurl="http://localhost/",
                  api_version="1.0"):
         self.baseurl = baseurl
+        self.api_version = api_version
         self.basepath = urlparse(self.baseurl).path
         self.r = defaultdict(dict)
         self.models = defaultdict(dict)
