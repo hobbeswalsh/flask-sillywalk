@@ -78,7 +78,7 @@ def get_random_cheese():
         paramType="path",
         allowMultiple=False)
   ],
-  errorResponses=[
+  responseMessages=[
     ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
   ])
 def get_cheese(cheeseName):
