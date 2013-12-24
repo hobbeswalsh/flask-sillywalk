@@ -44,7 +44,8 @@ from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 app = Flask("my_api")
 registry = SwaggerApiRegistry(
   app,
-  baseurl="http://localhost:5000/api/v1")
+  baseurl="http://localhost:5000/api/v1",
+  api_version="1.0")
 register = registry.register
 registerModel = registry.registerModel
 ```
