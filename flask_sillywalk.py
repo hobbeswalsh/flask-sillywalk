@@ -122,7 +122,7 @@ class SwaggerApiRegistry(object):
             method="GET",
             content_type="application/json",
             parameters=[],
-            errorResponses=[],
+            responseMessages=[],
             notes=None):
         """
         Registers an API endpoint.
@@ -139,7 +139,7 @@ class SwaggerApiRegistry(object):
         ...         paramType="path",
         ...         allowMultiple=False)],
         ...     notes='For getting cheese, you know...',
-        ...     errorResponses=[
+        ...     responseMessages=[
         ...         ApiErrorResponse(400, "Sorry, we're fresh out of that cheese."),
         ...         ApiErrorResponse(418, "I'm actually a teapot")]))
         >>> def get_cheese(cheesename):
@@ -163,7 +163,7 @@ class SwaggerApiRegistry(object):
                 path=path.replace(self.basepath, ""),
                 httpMethod=method,
                 params=parameters,
-                errorResponses=errorResponses,
+                responseMessages=responseMessages,
                 notes=notes)
 
             if api.resource not in self.app.view_functions:
@@ -227,7 +227,7 @@ class Api(SwaggerDocumentable):
             path,
             httpMethod,
             params=None,
-            errorResponses=None,
+            responseMessages=None,
             nickname=None,
             notes=None):
 
@@ -236,7 +236,7 @@ class Api(SwaggerDocumentable):
         self.resource = path.lstrip("/").split("/")[0]
         self.path = path.replace("<", "{").replace(">", "}")
         self.parameters = [] if params is None else params
-        self.errorResponses = [] if errorResponses is None else errorResponses
+        self.responseMessages = [] if responseMessages is None else responseMessages
         self.nickname = "" if nickname is None else nickname
         self.notes = notes
 
@@ -245,7 +245,7 @@ class Api(SwaggerDocumentable):
         ret = self.__dict__.copy()
         # need to serialize these guys
         ret["parameters"] = [p.document() for p in self.parameters]
-        ret["errorResponses"] = [e.document() for e in self.errorResponses]
+        ret["responseMessages"] = [e.document() for e in self.responseMessages]
         return ret
 
     def __hash__(self):
