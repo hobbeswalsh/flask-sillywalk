@@ -65,7 +65,7 @@ class SwaggerApiRegistry(object):
         Gets all currently known API resources and serialized them.
         """
         resources = {
-            "apiVersion": __APIVERSION__,
+            "apiVersion": self.api_version,
             "swaggerVersion": __SWAGGERVERSION__,
             "basePath": self.baseurl,
             "models": dict(),
@@ -189,7 +189,7 @@ class SwaggerApiRegistry(object):
         def inner_func():
             return_value = {
                 "resourcePath": resource.rstrip("/"),
-                "apiVersion": __APIVERSION__,
+                "apiVersion": self.api_version,
                 "swaggerVersion": __SWAGGERVERSION__,
                 "basePath": self.baseurl,
                 "apis": list(),
