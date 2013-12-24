@@ -10,7 +10,7 @@ except ImportError:
 
 
 __APIVERSION__ = "1.0"
-__SWAGGERVERSION__ = "1.0"
+__SWAGGERVERSION__ = "1.3"
 SUPPORTED_FORMATS = ["json"]
 
 
