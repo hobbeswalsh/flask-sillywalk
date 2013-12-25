@@ -45,7 +45,8 @@ app = Flask("my_api")
 registry = SwaggerApiRegistry(
   app,
   baseurl="http://localhost:5000/api/v1",
-  api_version="1.0")
+  api_version="1.0",
+  api_descriptions={"cheese": "Operations with cheese."})
 register = registry.register
 registerModel = registry.registerModel
 ```
