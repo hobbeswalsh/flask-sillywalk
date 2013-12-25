@@ -32,9 +32,10 @@ class SwaggerApiRegistry(object):
     """
 
     def __init__(self, app=None, baseurl="http://localhost/",
-                 api_version="1.0"):
+                 api_version="1.0", api_descriptions={}):
         self.baseurl = baseurl
         self.api_version = api_version
+        self.api_descriptions = api_descriptions
         self.basepath = urlparse(self.baseurl).path
         self.r = defaultdict(dict)
         self.models = defaultdict(dict)
@@ -74,9 +75,11 @@ class SwaggerApiRegistry(object):
             "models": dict(),
             "apis": list()}
         for resource in self.r.keys():
+            description = (self.api_descriptions[resource]
+                           if resource in self.api_descriptions else "")
             resources["apis"].append({
                 "path": "/" + resource + ".{format}",
-                "description": ""})
+                "description": description})
         for k, v in self.models.items():
             resources["models"][k] = v
         return resources
