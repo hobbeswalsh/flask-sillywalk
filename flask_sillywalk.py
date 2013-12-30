@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import inspect
 import json
 from collections import defaultdict
