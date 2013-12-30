@@ -44,7 +44,9 @@ from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 app = Flask("my_api")
 registry = SwaggerApiRegistry(
   app,
-  baseurl="http://localhost:5000/api/v1")
+  baseurl="http://localhost:5000/api/v1",
+  api_version="1.0",
+  api_descriptions={"cheese": "Operations with cheese."})
 register = registry.register
 registerModel = registry.registerModel
 ```
@@ -77,7 +79,7 @@ def get_random_cheese():
         paramType="path",
         allowMultiple=False)
   ],
-  errorResponses=[
+  responseMessages=[
     ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
   ])
 def get_cheese(cheeseName):
