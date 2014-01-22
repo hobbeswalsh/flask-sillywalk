@@ -37,6 +37,7 @@ class SwaggerApiRegistry(object):
         self.basepath = urlparse(self.baseurl).path
         self.r = defaultdict(dict)
         self.models = defaultdict(dict)
+        self.registered_routes = []
         if app is not None:
             self.app = app
             self.init_app(self.app)
@@ -172,13 +173,14 @@ class SwaggerApiRegistry(object):
 
             if api.resource not in self.app.view_functions:
                 for fmt in SUPPORTED_FORMATS:
-                    self.app.add_url_rule(
-                        "{0}/{1}.{2}".format(
-                        self.basepath.rstrip("/"),
-                        api.resource,
-                        fmt),
-                        api.resource,
-                        self.show_resource(api.resource))
+                    route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
+                                                 api.resource, fmt)
+                    if route not in self.registered_routes:
+                        self.registered_routes.append(route)
+                        self.app.add_url_rule(
+                            route,
+                            api.resource,
+                            self.show_resource(api.resource))
 
             if self.r[api.resource].get(api.path) is None:
                 self.r[api.resource][api.path] = list()
