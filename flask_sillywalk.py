@@ -8,7 +8,6 @@ try:
 except ImportError:
     from flask import _request_ctx_stack as stack
 
-
 __SWAGGERVERSION__ = "1.3"
 SUPPORTED_FORMATS = ["json"]
 
@@ -49,8 +48,8 @@ class SwaggerApiRegistry(object):
         for fmt in SUPPORTED_FORMATS:
             app.add_url_rule(
                 "{0}/resources.{1}".format(
-                self.basepath.rstrip("/"),
-                fmt),
+                    self.basepath.rstrip("/"),
+                    fmt),
                 "resources",
                 self.jsonify(self.resources))
 
@@ -58,8 +57,10 @@ class SwaggerApiRegistry(object):
         """
         In case we need to serialize different stuff in the future.
         """
+
         def inner_func():
             return json.dumps(f())
+
         return inner_func
 
     def resources(self):
@@ -94,6 +95,7 @@ class SwaggerApiRegistry(object):
         >>>     def __init__(self):
         >>>     pass
         """
+
         def inner_func(c, *args, **kwargs):
             if self.app is None:
                 raise SwaggerRegistryError(
@@ -118,6 +120,7 @@ class SwaggerApiRegistry(object):
             for k, v in defaults:
                 self.models[c.__name__]["properties"][k] = {"default": v}
             return c
+
         return inner_func
 
     def register(
@@ -150,6 +153,7 @@ class SwaggerApiRegistry(object):
         >>>     # some function
 
         """
+
         def inner_func(f):
             if self.app is None:
                 raise SwaggerRegistryError(
@@ -174,9 +178,9 @@ class SwaggerApiRegistry(object):
                 for fmt in SUPPORTED_FORMATS:
                     self.app.add_url_rule(
                         "{0}/{1}.{2}".format(
-                        self.basepath.rstrip("/"),
-                        api.resource,
-                        fmt),
+                            self.basepath.rstrip("/"),
+                            api.resource,
+                            fmt),
                         api.resource,
                         self.show_resource(api.resource))
 
@@ -190,6 +194,7 @@ class SwaggerApiRegistry(object):
         """
         Serialize a single resource.
         """
+
         def inner_func():
             return_value = {
                 "resourcePath": resource.rstrip("/"),
@@ -209,6 +214,7 @@ class SwaggerApiRegistry(object):
                     api_object["operations"].append(api.document())
                 return_value["apis"].append(api_object)
             return json.dumps(return_value)
+
         return inner_func
 
 
@@ -225,6 +231,7 @@ class Api(SwaggerDocumentable):
     """
     A single API endpoint.
     """
+
     def __init__(
             self,
             method,
@@ -234,7 +241,6 @@ class Api(SwaggerDocumentable):
             responseMessages=None,
             nickname=None,
             notes=None):
-
         self.httpMethod = httpMethod
         self.summary = method.__doc__ if method.__doc__ is not None else ""
         self.resource = path.lstrip("/").split("/")[0]
@@ -260,6 +266,7 @@ class ApiParameter(SwaggerDocumentable):
     """
     A single API parameter
     """
+
     def __init__(
             self,
             name,
@@ -283,6 +290,7 @@ class ImplicitApiParameter(ApiParameter):
     """
     Not sure what I was thinking here... --hobbeswalsh
     """
+
     def __init__(self, *args, **kwargs):
         if "default_value" not in kwargs:
             raise TypeError(
@@ -295,6 +303,7 @@ class ApiErrorResponse(SwaggerDocumentable):
     """
     An API error response.
     """
+
     def __init__(self, code, message):
         self.message = message
         self.code = code

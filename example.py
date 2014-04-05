@@ -101,5 +101,6 @@ def after_request(data):
         'Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS , PUT'
     return response
 
+
 port = int(os.environ.get("PORT", 5000))
 app.run(host="0.0.0.0", port=port, debug=True)
