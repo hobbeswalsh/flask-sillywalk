@@ -130,6 +130,7 @@ class SwaggerApiRegistry(object):
             content_type="application/json",
             parameters=[],
             responseMessages=[],
+            nickname=None,
             notes=None):
         """
         Registers an API endpoint.
@@ -172,6 +173,7 @@ class SwaggerApiRegistry(object):
                 httpMethod=method,
                 params=parameters,
                 responseMessages=responseMessages,
+                nickname=nickname,
                 notes=notes)
 
             if api.resource not in self.app.view_functions:
