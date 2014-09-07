@@ -1,7 +1,7 @@
 from flask_classy import FlaskView
 from flask_classy import get_interesting_members
 
-from flask_sillywalk import SwaggerApiRegistry
+from flask_sillywalk import SUPPORTED_FORMATS, SwaggerApiRegistry, Api
 
 
 def api_docs(parameters, response_messages):
