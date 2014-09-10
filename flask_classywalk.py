@@ -28,7 +28,7 @@ class SwaggerClassyApiRegistry(SwaggerApiRegistry):
                 "You need to initialize {0} with a Flask app".format(
                     self.__class__.__name__))
 
-        route_base = klass.get_route_base()
+        route_base = klass.get_route_base().rstrip("/")
         for http_method, method in get_interesting_members(FlaskView, klass):
             paths = [(route_base, [http_method])]
             try:
@@ -36,19 +36,23 @@ class SwaggerClassyApiRegistry(SwaggerApiRegistry):
             except AttributeError, KeyError:
                 pass
             else:
-                paths = [(route_base.rstrip("/") +  _path,
+                paths = [(route_base +  _path,
                           _methods['methods']) for _path, _methods in method_routes]
 
             for route_path, route_methods in paths:
                 for _method in route_methods:
                     api_docs = getattr(method, '_api_docs', {'parameters': [],
                                                              'error_response': []})
+                    if klass.trailing_slash:
+                        route_path = "%s/" % route_path.rstrip("/")
+
                     api = Api(
                         method=method,
                         path=route_path,
                         httpMethod=_method,
                         params=api_docs['parameters'],
-                        responseMessages=api_docs['error_response'])
+                        responseMessages=api_docs['error_response'],
+                        nickname=method.__name__)
 
                     if api.resource not in self.app.view_functions:
                         for fmt in SUPPORTED_FORMATS:
