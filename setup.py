@@ -7,7 +7,7 @@ This is the description for that library
 from setuptools import setup, find_packages
 
 
-with open('README.md') as f:
+with open('README.rst') as f:
     description = f.read()
 
 setup(

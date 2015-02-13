@@ -10,3 +10,5 @@ Changes
 - Added tests, travisci.
 
 - Proper flask extension.
+
+- Global registry, but blueprint url rules.
