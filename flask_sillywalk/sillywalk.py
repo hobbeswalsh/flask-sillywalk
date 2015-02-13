@@ -1,12 +1,9 @@
 import inspect
 import json
-from collections import defaultdict
-from urlparse import urlparse
 
-try:
-    from flask import _app_ctx_stack as stack
-except ImportError:
-    from flask import _request_ctx_stack as stack
+from collections import defaultdict
+from flask.ext.sillywalk.compat import urlparse
+
 
 __SWAGGERVERSION__ = "1.3"
 SUPPORTED_FORMATS = ["json"]
@@ -111,8 +108,8 @@ class SwaggerApiRegistry(object):
             argspec.args.remove("self")
             defaults = {}
             if argspec.defaults:
-                defaults = zip(argspec.args[-len(
-                    argspec.defaults):], argspec.defaults)
+                defaults = list(zip(argspec.args[-len(
+                    argspec.defaults):], argspec.defaults))
             for arg in argspec.args[:-len(defaults)]:
                 if self.models[c.__name__].get("required") is None:
                     self.models[c.__name__]["required"] = []

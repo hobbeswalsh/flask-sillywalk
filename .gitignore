@@ -32,3 +32,6 @@ local
 
 ## virtualenv, in case you use it
 venv
+
+# vim
+*.swp

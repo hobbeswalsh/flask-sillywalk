@@ -3,7 +3,7 @@ import os
 import json
 
 from flask import Flask, make_response, request
-from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
+from flask.ext.sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 
 app = Flask("foobar")
