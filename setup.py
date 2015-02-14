@@ -1,6 +1,6 @@
 """
-Flask-Swagger
--------------
+Flask-Sillywalk
+---------------
 
 This is the description for that library
 """
@@ -13,7 +13,7 @@ with open('README.rst') as f:
 setup(
     name='Flask-Sillywalk',
     version='1.0',
-    url='https://github.com/hobbeswalsh/flask-swagger',
+    url='https://github.com/hobbeswalsh/flask-sillywalk',
     license='BSD',
     author='Robin Walsh & Harvey Rogers',
     author_email='rob.walsh@gmail.com',
