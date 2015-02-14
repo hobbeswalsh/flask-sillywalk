@@ -2,6 +2,8 @@ import inspect
 import json
 from collections import defaultdict
 from urlparse import urlparse
+from flask import render_template
+from flask.views import View
 
 try:
     from flask import _app_ctx_stack as stack
@@ -9,7 +11,7 @@ except ImportError:
     from flask import _request_ctx_stack as stack
 
 __SWAGGERVERSION__ = "1.3"
-SUPPORTED_FORMATS = ["json"]
+SUPPORTED_FORMATS = ["json", "html"]
 
 
 class SwaggerRegistryError(Exception):
@@ -53,6 +55,15 @@ class SwaggerApiRegistry(object):
                     fmt),
                 "resources",
                 self.jsonify(self.resources))
+            if fmt == "html":
+                app.add_url_rule("{0}/resources.{1}".format(
+                    self.basepath.rstrip("/"),fmt),
+                    view_func=RenderTemplateView.as_view('docs_layout',
+                    template_name='docs_layout.html', json=self.resources()))
+            else:
+                app.add_url_rule("{0}/resources.{1}".format(
+                    self.basepath.rstrip("/"),fmt), "resources",
+                    self.jsonify(self.resources))
 
     def jsonify(self, f):
         """
@@ -63,6 +74,31 @@ class SwaggerApiRegistry(object):
             return json.dumps(f())
 
         return inner_func
+
+    def validateAPI(self):
+        """
+        Validate that we have to spec API data
+        """
+
+        if self.api_version is None:
+            raise APIException("API Declarations must contain a swaggerVersion")
+
+        if self.basepath is None:
+            raise APIException("API Declarations must contain a basePath")
+
+        if self.r is None:
+            raise APIException("API Declarations must contain at least one API")
+
+    def validateResources(self):
+        """
+        Validate that we have to spec resource data
+        """
+
+        if self.api_version is None:
+            raise APIException("API Declarations must contain a swaggerVersion")
+
+        if self.r is None:
+            raise APIException("API Declarations must contain at least one API")
 
     def resources(self):
         """
@@ -82,6 +118,7 @@ class SwaggerApiRegistry(object):
                 "description": description})
         for k, v in self.models.items():
             resources["models"][k] = v
+        self.validateAPI()
         return resources
 
     def registerModel(self,
@@ -177,20 +214,24 @@ class SwaggerApiRegistry(object):
                 nickname=nickname,
                 notes=notes)
 
+            if self.r[api.resource].get(api.path) is None:
+                self.r[api.resource][api.path] = list()
+            self.r[api.resource][api.path].append(api)
+
             if api.resource not in self.app.view_functions:
                 for fmt in SUPPORTED_FORMATS:
                     route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
                                                  api.resource, fmt)
                     if route not in self.registered_routes:
                         self.registered_routes.append(route)
-                        self.app.add_url_rule(
-                            route,
-                            api.resource,
-                            self.show_resource(api.resource))
-
-            if self.r[api.resource].get(api.path) is None:
-                self.r[api.resource][api.path] = list()
-            self.r[api.resource][api.path].append(api)
+                        if fmt == "html":
+                             self.app.add_url_rule(route,
+                                view_func=RenderTemplateView.as_view('resource_'+api.resource+'_layout', template_name='resource_layout.html', json=self.resourcesSerializer(api.resource)()))
+                        else:
+                            self.app.add_url_rule(
+                                route,
+                                api.resource,
+                                self.show_resource(api.resource))
 
         return inner_func
 
@@ -217,9 +258,17 @@ class SwaggerApiRegistry(object):
                 for api in apis:
                     api_object["operations"].append(api.document())
                 return_value["apis"].append(api_object)
-            return json.dumps(return_value)
+            return return_value
 
         return inner_func
+
+
+class RenderTemplateView(View):
+    def __init__(self, template_name, json):
+        self.template_name = template_name
+        self.json = json
+    def dispatch_request(self):
+        return render_template(self.template_name, parameters=[self.json], apis=[self.json['apis']])
 
 
 class SwaggerDocumentable(object):
