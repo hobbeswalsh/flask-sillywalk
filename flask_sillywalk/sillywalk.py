@@ -137,6 +137,11 @@ class SwaggerApiRegistry(object):
                 "You need to initialize {0} with a Flask app".format(
                     self.__class__.__name__))
 
+        # use basepath if not set by user
+        if self.basepath not in path:
+            path = self.basepath + "/" + path
+            path = path.replace("//", "/")
+
         # register views on blueprints
         app = self.app
 

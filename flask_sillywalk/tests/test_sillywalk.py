@@ -96,8 +96,9 @@ class TestDecorators(unittest.TestCase):
             """Gets cheese, just like the name says."""
             return json.dumps({"response": "OK", "message": "Sorry, we're fresh out of {0}!".format(cheeseName)})
 
+        # XXX here we are not providing the basepath /api/v1
         @register(
-            "/api/v1/holyHandGrenade/<number>",
+            "/holyHandGrenade/<number>",
             method="GET",
             parameters=[
                 ApiParameter(
@@ -179,6 +180,13 @@ class TestDecorators(unittest.TestCase):
                           'toss_the_grenade',
                           'get_cheese',
                           'static'])
+        self.assertEqual([x.rule for x in app.url_map.iter_rules()],
+                         ['/api/v1/holyHandGrenade.json',
+                          '/api/v1/resources.json', '/api/v1/cheese.json',
+                          '/api/v1/holyHandGrenade/<number>',
+                          '/api/v1/holyHandGrenade/<number>',
+                          '/api/v1/cheese/<cheeseName>',
+                          '/static/<path:filename>'])
 
     def test_add_register(self):
         app, registry = self._create_app()

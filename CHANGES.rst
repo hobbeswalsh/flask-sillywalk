@@ -12,3 +12,5 @@ Changes
 - Proper flask extension.
 
 - Global registry, but blueprint url rules.
+
+- Add basepath if not provided.
