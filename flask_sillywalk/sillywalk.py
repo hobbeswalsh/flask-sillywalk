@@ -4,10 +4,12 @@ import flask
 
 from collections import defaultdict
 from flask_sillywalk.compat import urlparse
+from flask import render_template
+from flask.views import View
 
 
 __SWAGGERVERSION__ = "1.3"
-SUPPORTED_FORMATS = ["json"]
+SUPPORTED_FORMATS = ["json", "html"]
 
 
 class SwaggerRegistryError(Exception):
@@ -51,6 +53,15 @@ class SwaggerApiRegistry(object):
                     fmt),
                 "resources",
                 self.jsonify(self.resources))
+            if fmt == "html":
+                app.add_url_rule("{0}/resources.{1}".format(
+                    self.basepath.rstrip("/"),fmt),
+                    view_func=RenderTemplateView.as_view('docs_layout',
+                    template_name='docs_layout.html', json=self.resources()))
+            else:
+                app.add_url_rule("{0}/resources.{1}".format(
+                    self.basepath.rstrip("/"),fmt), "resources",
+                    self.jsonify(self.resources))
 
     def jsonify(self, f):
         """
@@ -63,6 +74,31 @@ class SwaggerApiRegistry(object):
                     mimetype="application/json")
 
         return inner_func
+
+    def validateAPI(self):
+        """
+        Validate that we have to spec API data
+        """
+
+        if self.api_version is None:
+            raise APIException("API Declarations must contain a swaggerVersion")
+
+        if self.basepath is None:
+            raise APIException("API Declarations must contain a basePath")
+
+        if self.r is None:
+            raise APIException("API Declarations must contain at least one API")
+
+    def validateResources(self):
+        """
+        Validate that we have to spec resource data
+        """
+
+        if self.api_version is None:
+            raise APIException("API Declarations must contain a swaggerVersion")
+
+        if self.r is None:
+            raise APIException("API Declarations must contain at least one API")
 
     def resources(self):
         """
@@ -82,6 +118,7 @@ class SwaggerApiRegistry(object):
                 "description": description})
         for k, v in self.models.items():
             resources["models"][k] = v
+        self.validateAPI()
         return resources
 
     def registerModel(self,
@@ -172,10 +209,14 @@ class SwaggerApiRegistry(object):
                                              api.resource, fmt)
                 if route not in self.registered_routes:
                     self.registered_routes.append(route)
-                    self.app.add_url_rule(
-                        route,
-                        api.resource,
-                        self.jsonify(self.show_resource(api.resource)))
+                    if fmt == "html":
+                        self.app.add_url_rule(route,
+                                              view_func=RenderTemplateView.as_view('resource_'+api.resource+'_layout', template_name='resource_layout.html', json=self.resourcesSerializer(api.resource)()))
+                    else:
+                        self.app.add_url_rule(
+                            route,
+                            api.resource,
+                            self.jsonify(self.show_resource(api.resource)))
 
         if self.r[api.resource].get(api.path) is None:
             self.r[api.resource][api.path] = list()
@@ -249,8 +290,50 @@ class SwaggerApiRegistry(object):
 
         """
         def inner_func(f):
+<<<<<<< a8b2713c40156ecd7eca36c4c2d1d966c7f903f1:flask_sillywalk/sillywalk.py
             self._register(path, f, method, content_type, parameters,
                            responseMessages, nickname, notes, bp)
+=======
+            if self.app is None:
+                raise SwaggerRegistryError(
+                    "You need to initialize {0} with a Flask app".format(
+                        self.__class__.__name__))
+
+            self.app.add_url_rule(
+                path,
+                f.__name__,
+                f,
+                methods=[method])
+
+            api = Api(
+                method=f,
+                path=path.replace(self.basepath, ""),
+                httpMethod=method,
+                params=parameters,
+                responseMessages=responseMessages,
+                nickname=nickname,
+                notes=notes)
+
+            if self.r[api.resource].get(api.path) is None:
+                self.r[api.resource][api.path] = list()
+            self.r[api.resource][api.path].append(api)
+
+            if api.resource not in self.app.view_functions:
+                for fmt in SUPPORTED_FORMATS:
+                    route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
+                                                 api.resource, fmt)
+                    if route not in self.registered_routes:
+                        self.registered_routes.append(route)
+                        if fmt == "html":
+                             self.app.add_url_rule(route,
+                                view_func=RenderTemplateView.as_view('resource_'+api.resource+'_layout', template_name='resource_layout.html', json=self.resourcesSerializer(api.resource)()))
+                        else:
+                            self.app.add_url_rule(
+                                route,
+                                api.resource,
+                                self.show_resource(api.resource))
+
+>>>>>>> added html rendering:flask_sillywalk.py
         return inner_func
 
     def show_resource(self, resource):
@@ -279,6 +362,14 @@ class SwaggerApiRegistry(object):
             return return_value
 
         return inner_func
+
+
+class RenderTemplateView(View):
+    def __init__(self, template_name, json):
+        self.template_name = template_name
+        self.json = json
+    def dispatch_request(self):
+        return render_template(self.template_name, parameters=[self.json], apis=[self.json['apis']])
 
 
 class SwaggerDocumentable(object):
