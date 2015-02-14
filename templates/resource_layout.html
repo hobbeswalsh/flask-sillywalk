@@ -1,0 +1,41 @@
+<!doctype html>
+<head>
+<title>API {{ parameters.0.apiVersion }} Docs</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% for a in apis %}
+    <table>
+    {% for key,value in a.items() %}
+        {% if value %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>
+            {% if value | is_list %}
+                {% for i in value %}
+                    <table>
+                    {% for ikey,ivalue in i.items() %}
+                            <thead>
+                                <tr>
+                                    <th>{{ ivalue }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ ikey }}</td>
+                                </tr>
+                            </tbody>
+                    {% endfor %}
+                    </table>
+                {% endfor %}
+            {% else %}
+                {{ value }}
+            {% endif %}
+            </td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+    </table>
+{% endfor %}
+</body>
+</html>

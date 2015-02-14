@@ -8,6 +8,12 @@ from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 app = Flask("foobar")
 
+@app.template_filter()
+def is_list(value):
+    return isinstance(value, list)
+
+app.jinja_env.filters['is_list'] = is_list
+
 url = os.environ.get("URL", "localhost:5000")
 registry = SwaggerApiRegistry(app, baseurl="http://{}/api/v1".format(url))
 register = registry.register
