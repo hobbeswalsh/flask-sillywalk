@@ -1,6 +1,5 @@
 import inspect
 import json
-from collections import defaultdict
 import collections
 from urlparse import urlparse
 from flask import render_template
@@ -37,8 +36,8 @@ class SwaggerApiRegistry(object):
         self.api_version = api_version
         self.api_descriptions = api_descriptions
         self.basepath = urlparse(self.baseurl).path
-        self.r = defaultdict(dict)
-        self.models = defaultdict(dict)
+        self.r = collections.defaultdict(dict)
+        self.models = collections.defaultdict(dict)
         self.registered_routes = []
         if app is not None:
             self.app = app
