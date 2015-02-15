@@ -9,3 +9,12 @@ table {
     border-spacing: 2em;
     border-collapse: separate;
 }
+
+.path, .method {
+    float: left;
+    padding: 1em;
+}
+
+.params {
+    clear: both;
+}
