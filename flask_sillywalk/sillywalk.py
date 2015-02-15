@@ -290,50 +290,8 @@ class SwaggerApiRegistry(object):
 
         """
         def inner_func(f):
-<<<<<<< a8b2713c40156ecd7eca36c4c2d1d966c7f903f1:flask_sillywalk/sillywalk.py
             self._register(path, f, method, content_type, parameters,
                            responseMessages, nickname, notes, bp)
-=======
-            if self.app is None:
-                raise SwaggerRegistryError(
-                    "You need to initialize {0} with a Flask app".format(
-                        self.__class__.__name__))
-
-            self.app.add_url_rule(
-                path,
-                f.__name__,
-                f,
-                methods=[method])
-
-            api = Api(
-                method=f,
-                path=path.replace(self.basepath, ""),
-                httpMethod=method,
-                params=parameters,
-                responseMessages=responseMessages,
-                nickname=nickname,
-                notes=notes)
-
-            if self.r[api.resource].get(api.path) is None:
-                self.r[api.resource][api.path] = list()
-            self.r[api.resource][api.path].append(api)
-
-            if api.resource not in self.app.view_functions:
-                for fmt in SUPPORTED_FORMATS:
-                    route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
-                                                 api.resource, fmt)
-                    if route not in self.registered_routes:
-                        self.registered_routes.append(route)
-                        if fmt == "html":
-                             self.app.add_url_rule(route,
-                                view_func=RenderTemplateView.as_view('resource_'+api.resource+'_layout', template_name='resource_layout.html', json=self.resourcesSerializer(api.resource)()))
-                        else:
-                            self.app.add_url_rule(
-                                route,
-                                api.resource,
-                                self.show_resource(api.resource))
-
->>>>>>> added html rendering:flask_sillywalk.py
         return inner_func
 
     def show_resource(self, resource):
@@ -365,11 +323,12 @@ class SwaggerApiRegistry(object):
 
 
 class RenderTemplateView(View):
-    def __init__(self, template_name, json):
+    def __init__(self, template_name, json, hostname=None):
         self.template_name = template_name
         self.json = json
+        self.hostname = hostname
     def dispatch_request(self):
-        return render_template(self.template_name, parameters=[self.json], apis=[self.json['apis']])
+        return render_template(self.template_name, parameters=[self.json], apis=[self.json["apis"]], hostname=self.hostname)
 
 
 class SwaggerDocumentable(object):
@@ -383,7 +342,7 @@ class SwaggerDocumentable(object):
 
 class Api(SwaggerDocumentable):
     """
-    A single API endpoint.
+    A single API endpoint
     """
 
     def __init__(
@@ -395,22 +354,22 @@ class Api(SwaggerDocumentable):
             responseMessages=None,
             nickname=None,
             notes=None):
-        self.httpMethod = httpMethod
-        self.summary = method.__doc__ if method.__doc__ is not None else ""
-        self.resource = path.lstrip("/").split("/")[0]
-        self.path = path.replace("<", "{").replace(">", "}")
-        self.parameters = [] if params is None else params
-        self.responseMessages = [] if responseMessages is None else responseMessages
-        self.nickname = "" if nickname is None else nickname
-        self.notes = notes
+        self.ret = odict.OrderedDict()
+        self.ret["httpMethod"] = httpMethod
+        self.ret["path"] = path.replace("<", "{").replace(">", "}")
+        self.ret["resource"] = path.lstrip("/").split("/")[0]
+        self.ret["parameters"] = [] if params is None else params
+        self.ret["responseMessages"] = [] if responseMessages is None else responseMessages
+        self.ret["nickname"] = "" if nickname is None else nickname
+        self.ret["notes"] = notes
+        self.ret["summary"] = method.__doc__ if method.__doc__ is not None else ""
 
     # See https://github.com/wordnik/swagger-core/wiki/API-Declaration
     def document(self):
-        ret = self.__dict__.copy()
         # need to serialize these guys
-        ret["parameters"] = [p.document() for p in self.parameters]
-        ret["responseMessages"] = [e.document() for e in self.responseMessages]
-        return ret
+        self.ret["parameters"] = [p.document() for p in self.ret["parameters"]]
+        self.ret["responseMessages"] = [e.document() for e in self.ret["responseMessages"]]
+        return self.ret
 
     def __hash__(self):
         return hash(self.path)
@@ -429,15 +388,16 @@ class ApiParameter(SwaggerDocumentable):
             dataType,
             paramType,
             allowMultiple=False):
-        self.name = name
-        self.description = description
-        self.required = required
-        self.dataType = dataType
-        self.paramType = paramType
-        self.allowMultiple = allowMultiple
+        self.ret = odict.OrderedDict()
+        self.ret["name"] = name
+        self.ret["dataType"] = dataType
+        self.ret["required"] = required
+        self.ret["paramType"] = paramType
+        self.ret["allowMultiple"] = allowMultiple
+        self.ret["description"] = description
 
     def document(self):
-        return self.__dict__
+        return self.ret
 
 
 class ImplicitApiParameter(ApiParameter):
