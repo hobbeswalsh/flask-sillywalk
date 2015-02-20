@@ -10,6 +10,11 @@ try:
 except ImportError:
     from flask import _request_ctx_stack as stack
 
+if 'OrderedDict' in dir(collections):
+    odict = collections
+else:
+    import ordereddict as odict
+
 __SWAGGERVERSION__ = "1.3"
 SUPPORTED_FORMATS = ["json", "html"]
 
@@ -39,22 +44,16 @@ class SwaggerApiRegistry(object):
         self.r = collections.defaultdict(dict)
         self.models = collections.defaultdict(dict)
         self.registered_routes = []
-        if app is not None:
-            self.app = app
-            self.init_app(self.app)
+        if app:
+            self.init_app(app)
 
     def init_app(self, app):
         """
         Initialize the Flask app by adding the base "resources" URL. Currently only JSON
         is supported, so this will add the URL <baseurl>/resources.json to your app.
         """
+        self.app = app
         for fmt in SUPPORTED_FORMATS:
-            app.add_url_rule(
-                "{0}/resources.{1}".format(
-                    self.basepath.rstrip("/"),
-                    fmt),
-                "resources",
-                self.jsonify(self.resources))
             if fmt == "html":
                 app.add_url_rule("{0}/resources.{1}".format(
                     self.basepath.rstrip("/"),fmt),
@@ -226,10 +225,10 @@ class SwaggerApiRegistry(object):
                         self.registered_routes.append(route)
                         if fmt == "html":
                             self.app.add_url_rule(route,
-                                view_func=RenderTemplateView.as_view('resource_'+api.ret["resource"]+'_layout', template_name='resource_layout.html', json=self.resourcesSerializer(api.ret["resource"])(), hostname=self.hostname))
+                                view_func=RenderTemplateView.as_view('resource_'+api.ret["resource"]+'_layout', template_name='resource_layout.html', json=self.show_resource(api.ret["resource"])()))
                         else:
                             self.app.add_url_rule(route,
-                                'resource_'+api.ret["resource"]+'_json', self.jsonify(self.resourcesSerializer(api.ret["resource"])))
+                                'resource_'+api.ret["resource"]+'_json', self.jsonify(self.show_resource(api.ret["resource"])))
 
         return inner_func
 

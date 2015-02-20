@@ -15,7 +15,7 @@ def is_list(value):
 app.jinja_env.filters['is_list'] = is_list
 
 url = os.environ.get("URL", "localhost:5000")
-registry = SwaggerApiRegistry(app, baseurl="http://{}/api/v1".format(url))
+registry = SwaggerApiRegistry(app, baseurl="http://localhost:5000/api/v1".format(url))
 register = registry.register
 registerModel = registry.registerModel
 
