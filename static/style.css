@@ -5,8 +5,12 @@ body {
     padding: 0;
 }
 
+.grid {
+    margin-left: -1em; /* remove outer border spacing */
+}
+
 table {
-    border-spacing: 2em;
+    border-spacing: 1em;
     border-collapse: separate;
 }
 

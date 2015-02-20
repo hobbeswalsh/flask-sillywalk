@@ -8,18 +8,26 @@
     {% for key,value in a.items() %}
         {% if (loop.index == 1 or loop.index == 2) %}
             {% if loop.index == 1 %}
+                <h3><p>{{ value }}</p></h3>
+            {% endif %}
+            {% if loop.index == 2 %}
+                <p>{{ value }}</p>
+            {% endif %}
+        {% endif %}
+        {% if (loop.index == 3 or loop.index == 4) %}
+            {% if loop.index == 3 %}
                 <div class="method">
                     {{ value }}
                 </div>
             {% endif %}
-            {% if loop.index == 2 %}
+            {% if loop.index == 4 %}
                 <div class="path">
                     {{ parameters.0.basePath }}{{ value }}
                 </div>
             {% endif %}
         {% else %}
             {% if value | is_list %}
-                <div class="params">
+                <div class="params grid">
                     <table>
                     {% for i in value %}
                         {% if loop.index == 1 %}
