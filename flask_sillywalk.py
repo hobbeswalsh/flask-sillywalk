@@ -74,7 +74,7 @@ class SwaggerApiRegistry(object):
 
         return inner_func
 
-    def validateAPI(self):
+    def validate_api(self):
         """
         Validate that we have to spec API data
         """
@@ -88,7 +88,7 @@ class SwaggerApiRegistry(object):
         if self.r is None:
             raise APIException("API Declarations must contain at least one API")
 
-    def validateResources(self):
+    def validate_resources(self):
         """
         Validate that we have to spec resource data
         """
@@ -117,7 +117,7 @@ class SwaggerApiRegistry(object):
                 "description": description})
         for k, v in self.models.items():
             resources["models"][k] = v
-        self.validateAPI()
+        self.validate_api()
         return resources
 
     def registerModel(self,
