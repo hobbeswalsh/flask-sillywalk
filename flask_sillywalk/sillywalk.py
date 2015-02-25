@@ -1,12 +1,9 @@
 import inspect
 import json
-from collections import defaultdict
-from urlparse import urlparse
 
-try:
-    from flask import _app_ctx_stack as stack
-except ImportError:
-    from flask import _request_ctx_stack as stack
+from collections import defaultdict
+from flask.ext.sillywalk.compat import urlparse
+
 
 __SWAGGERVERSION__ = "1.3"
 SUPPORTED_FORMATS = ["json"]
@@ -111,28 +108,121 @@ class SwaggerApiRegistry(object):
             argspec.args.remove("self")
             defaults = {}
             if argspec.defaults:
-                defaults = zip(argspec.args[-len(
-                    argspec.defaults):], argspec.defaults)
+                defaults = list(zip(argspec.args[-len(
+                    argspec.defaults):], argspec.defaults))
             for arg in argspec.args[:-len(defaults)]:
                 if self.models[c.__name__].get("required") is None:
                     self.models[c.__name__]["required"] = []
                 self.models[c.__name__]["required"].append(arg)
-                #self.models[c.__name__]["required"][arg] = {"required": True}
+                # self.models[c.__name__]["required"][arg] = {"required": True}
             for k, v in defaults:
                 self.models[c.__name__]["properties"][k] = {"default": v}
             return c
 
         return inner_func
 
-    def register(
-            self,
+    def _register(self,
+                  path,
+                  f,
+                  method,
+                  content_type,
+                  parameters,
+                  responseMessages,
+                  nickname,
+                  notes,
+                  bp):
+
+        if self.app is None:
+            raise SwaggerRegistryError(
+                "You need to initialize {0} with a Flask app".format(
+                    self.__class__.__name__))
+
+        # use basepath if not set by user
+        if self.basepath not in path:
+            path = self.basepath + "/" + path
+            path = path.replace("//", "/")
+
+        # register views on blueprints
+        app = self.app
+
+        if bp:
+            app = bp
+
+        app.add_url_rule(
             path,
-            method="GET",
-            content_type="application/json",
-            parameters=[],
-            responseMessages=[],
-            nickname=None,
-            notes=None):
+            f.__name__,
+            f,
+            methods=[method])
+
+        api = Api(
+            method=f,
+            path=path.replace(self.basepath, ""),
+            httpMethod=method,
+            params=parameters,
+            responseMessages=responseMessages,
+            nickname=nickname,
+            notes=notes)
+
+        if api.resource not in self.app.view_functions:
+            for fmt in SUPPORTED_FORMATS:
+                route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
+                                             api.resource, fmt)
+                if route not in self.registered_routes:
+                    self.registered_routes.append(route)
+                    self.app.add_url_rule(
+                        route,
+                        api.resource,
+                        self.show_resource(api.resource))
+
+        if self.r[api.resource].get(api.path) is None:
+            self.r[api.resource][api.path] = list()
+        self.r[api.resource][api.path].append(api)
+
+    def add_register(self,
+                     path,
+                     f,
+                     method="GET",
+                     content_type="application/json",
+                     parameters=[],
+                     responseMessages=[],
+                     nickname=None,
+                     notes=None,
+                     bp=None):
+        """
+        Registers an API endpoint.
+
+        Usage:
+
+        >>> def get_cheese(cheesename):
+        >>>     # some function
+        >>> my_registry.add_register(
+        ...     "/api/v1/cheese/<cheeseName>",
+        ...     get_cheese,
+        ...     parameters=[ApiParameter(
+        ...         name="cheeseName",
+        ...         description="The name of the cheese to fetch",
+        ...         required=True,
+        ...         dataType="str",
+        ...         paramType="path",
+        ...         allowMultiple=False)],
+        ...     notes='For getting cheese, you know...',
+        ...     responseMessages=[
+        ...         ApiErrorResponse(400, "Sorry, we're fresh out of that cheese."),
+        ...         ApiErrorResponse(418, "I'm actually a teapot")]))
+
+        """
+        self._register(path, f, method, content_type, parameters,
+                       responseMessages, nickname, notes, bp)
+
+    def register(self,
+                 path,
+                 method="GET",
+                 content_type="application/json",
+                 parameters=[],
+                 responseMessages=[],
+                 nickname=None,
+                 notes=None,
+                 bp=None):
         """
         Registers an API endpoint.
 
@@ -155,43 +245,9 @@ class SwaggerApiRegistry(object):
         >>>     # some function
 
         """
-
         def inner_func(f):
-            if self.app is None:
-                raise SwaggerRegistryError(
-                    "You need to initialize {0} with a Flask app".format(
-                        self.__class__.__name__))
-
-            self.app.add_url_rule(
-                path,
-                f.__name__,
-                f,
-                methods=[method])
-
-            api = Api(
-                method=f,
-                path=path.replace(self.basepath, ""),
-                httpMethod=method,
-                params=parameters,
-                responseMessages=responseMessages,
-                nickname=nickname,
-                notes=notes)
-
-            if api.resource not in self.app.view_functions:
-                for fmt in SUPPORTED_FORMATS:
-                    route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
-                                                 api.resource, fmt)
-                    if route not in self.registered_routes:
-                        self.registered_routes.append(route)
-                        self.app.add_url_rule(
-                            route,
-                            api.resource,
-                            self.show_resource(api.resource))
-
-            if self.r[api.resource].get(api.path) is None:
-                self.r[api.resource][api.path] = list()
-            self.r[api.resource][api.path].append(api)
-
+            self._register(path, f, method, content_type, parameters,
+                           responseMessages, nickname, notes, bp)
         return inner_func
 
     def show_resource(self, resource):

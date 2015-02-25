@@ -13,6 +13,13 @@ http://developer.wordnik.com/docs -- To read more about the Swagger
 spec, head over to https://github.com/wordnik/swagger-core/wiki or
 http://swagger.wordnik.com
 
+Git Repository and issue tracker: https://github.com/hobbeswalsh/flask-sillywalk
+Documentation: http://flask-sillywalk.readthedocs.org/en/latest/
+
+.. |travisci| image::  https://travis-ci.org/hobbeswalsh/flask-sillywalk.png
+.. _travisci: https://travis-ci.org/hobbeswalsh/flask-sillywalk
+
+|travisci|_
 
 Why do I want it?
 -----------------
@@ -26,9 +33,10 @@ Why do I want it?
 How do I get it?
 ----------------
 
-Currently, you clone this Github repository and drop the
-flask_sillywalk.py file into your Python path, but this is not the
-long-term answer. I'm looking to make this a proper Flask extension.
+From your favorit shell:: 
+
+    $ pip install flask-sillywalk
+
 
 How do I use it?
 ----------------
@@ -37,19 +45,19 @@ I'm glad you asked. In order to use this code, you need to first
 instantiate a SwaggerApiRegistry, which will keep track of all your API
 endpoints and documentation.
 
-```python
-from flask import Flask
-from flask_sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
+Usage::
+    
+    from flask import Flask
+    from flask.ext.sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
-app = Flask("my_api")
-registry = SwaggerApiRegistry(
-  app,
-  baseurl="http://localhost:5000/api/v1",
-  api_version="1.0",
-  api_descriptions={"cheese": "Operations with cheese."})
-register = registry.register
-registerModel = registry.registerModel
-```
+    app = Flask("my_api")
+    registry = SwaggerApiRegistry(
+      app,
+      baseurl="http://localhost:5000/api/v1",
+      api_version="1.0",
+      api_descriptions={"cheese": "Operations with cheese."})
+    register = registry.register
+    registerModel = registry.registerModel
 
 Then, instead of using the "@app.route" decorator that you're used to
 using with Flask, you use the "register" decorator you defined above (or
@@ -62,30 +70,30 @@ register a GET mthod with no possible parameters. In order to document a
 method with parameters, we can feed the @register function some
 parameters.
 
-```python
-@register("/api/v1/cheese/random")
-def get_random_cheese():
-  """Fetch a random Cheese from the database.
-  Throws OutOfCheeseException if this is not a cheese shop."""
-  return htmlify(db.cheeses.random())
+Usage::
 
-@register("/aoi/v1/cheese/<cheeseName>",
-  parameters=[
-    ApiParameter(
-        name="cheeseName",
-        description="The name of the cheese to fetch",
-        required=True,
-        dataType="str",
-        paramType="path",
-        allowMultiple=False)
-  ],
-  responseMessages=[
-    ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
-  ])
-def get_cheese(cheeseName):
-  """Gets a single cheese from the database."""
-  return htmlify(db.cheeses.fetch(name=cheeseName))
-```
+    @register("/api/v1/cheese/random")
+    def get_random_cheese():
+      """Fetch a random Cheese from the database.
+      Throws OutOfCheeseException if this is not a cheese shop."""
+      return htmlify(db.cheeses.random())
+
+    @register("/aoi/v1/cheese/<cheeseName>",
+      parameters=[
+        ApiParameter(
+            name="cheeseName",
+            description="The name of the cheese to fetch",
+            required=True,
+            dataType="str",
+            paramType="path",
+            allowMultiple=False)
+      ],
+      responseMessages=[
+        ApiErrorResponse(400, "Sorry, we're fresh out of that cheese.")
+      ])
+    def get_cheese(cheeseName):
+      """Gets a single cheese from the database."""
+      return htmlify(db.cheeses.fetch(name=cheeseName))
 
 Now, if you navigate to http://localhost:5000/api/v1/resources.json you
 should see the automatic API documentation. See documentation for all the
