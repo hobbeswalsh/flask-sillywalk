@@ -7,5 +7,5 @@ python:
   - "pypy"
 # command to install dependencies
 install:
-    - pip install -r requirements.txt
-script: py.test #--with-coverage --cover-package flask_sillywalk
+    - pip install .
+script: py.test --cov flask_sillywalk
