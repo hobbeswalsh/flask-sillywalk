@@ -354,7 +354,7 @@ class ImplicitApiParameter(ApiParameter):
     def __init__(self, *args, **kwargs):
         if "default_value" not in kwargs:
             raise TypeError(
-                "You need to provide an implicit parameter with a default value.")
+                "You need to provide an implicit param with a default value.")
         super(ImplicitApiParameter, self).__init__(*args, **kwargs)
         self.defaultValue = kwargs.get("default_value")
 

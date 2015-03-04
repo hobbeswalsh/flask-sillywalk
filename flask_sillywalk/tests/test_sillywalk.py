@@ -18,7 +18,7 @@ class TestDecorators(unittest.TestCase):
         app = Flask("foobar")
         app.config['TESTING'] = True
         url = os.environ.get("URL", "localhost:5000")
-        registry = SwaggerApiRegistry(app, baseurl="http://{}/api/v1".format(url))
+        registry = SwaggerApiRegistry(app, baseurl="http://{0}/api/v1".format(url))
 
         @app.after_request
         def after_request(data):
@@ -111,7 +111,7 @@ class TestDecorators(unittest.TestCase):
             bp=bp)
         def get_a_holy_hand_grenade(number):
             """Gets one or more holy hand grenades, just like the name says."""
-            return json.dumps("Fetching {} holy hand grenades".format(number))
+            return json.dumps("Fetching {0} holy hand grenades".format(number))
 
         @register(
             "/api/v1/holyHandGrenade/<number>",
@@ -135,8 +135,10 @@ class TestDecorators(unittest.TestCase):
         def toss_the_grenade(number):
             """Toss the holy hand grenade after {number} seconds."""
             target = request.args.get("target", "FOO")
-            return json.dumps("Waiting {} seconds to toss the grenade at {}.".format(
-                number, target))
+            return json.dumps(
+                "Waiting {0} seconds to toss the grenade at {1}.".format(
+                    number,
+                    target))
 
         # we have register our blueprint again to activate our added route
         if bp:
