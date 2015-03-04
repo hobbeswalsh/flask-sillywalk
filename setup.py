@@ -12,7 +12,7 @@ with open('README.rst') as f:
 
 setup(
     name='Flask-Sillywalk',
-    version='2.0',
+    version='2.1',
     url='https://github.com/hobbeswalsh/flask-sillywalk',
     license='BSD',
     author='Robin Walsh & Harvey Rogers',
