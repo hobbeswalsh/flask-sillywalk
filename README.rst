@@ -78,7 +78,7 @@ Usage::
       Throws OutOfCheeseException if this is not a cheese shop."""
       return htmlify(db.cheeses.random())
 
-    @register("/aoi/v1/cheese/<cheeseName>",
+    @register("/api/v1/cheese/<cheeseName>",
       parameters=[
         ApiParameter(
             name="cheeseName",
