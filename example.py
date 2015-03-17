@@ -6,7 +6,7 @@ from flask import Flask, make_response, request
 from flask.ext.sillywalk import SwaggerApiRegistry, ApiParameter, ApiErrorResponse
 
 
-app = Flask("foobar")
+app = Flask("cheeseShop")
 
 url = os.environ.get("URL", "localhost:5000")
 registry = SwaggerApiRegistry(app, baseurl="http://{0}/api/v1".format(url))
