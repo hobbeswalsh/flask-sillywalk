@@ -66,7 +66,7 @@ API return value).
 
 Now that we've got an API registry, we can register some functions. The
 @register decorator, when just given a path (like @app.route), will
-register a GET mthod with no possible parameters. In order to document a
+register a GET method with no possible parameters. In order to document a
 method with parameters, we can feed the @register function some
 parameters.
 
