@@ -1,5 +1,6 @@
 import inspect
 import json
+import flask
 
 from collections import defaultdict
 from flask_sillywalk.compat import urlparse
@@ -57,7 +58,9 @@ class SwaggerApiRegistry(object):
         """
 
         def inner_func():
-            return json.dumps(f())
+            return flask.Response(response=json.dumps(f()),
+                    status=200,
+                    mimetype="application/json")
 
         return inner_func
 
@@ -172,7 +175,7 @@ class SwaggerApiRegistry(object):
                     self.app.add_url_rule(
                         route,
                         api.resource,
-                        self.show_resource(api.resource))
+                        self.jsonify(self.show_resource(api.resource)))
 
         if self.r[api.resource].get(api.path) is None:
             self.r[api.resource][api.path] = list()
@@ -273,7 +276,7 @@ class SwaggerApiRegistry(object):
                 for api in apis:
                     api_object["operations"].append(api.document())
                 return_value["apis"].append(api_object)
-            return json.dumps(return_value)
+            return return_value
 
         return inner_func
 
