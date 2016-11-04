@@ -2,7 +2,7 @@ import inspect
 import json
 
 from collections import defaultdict
-from flask.ext.sillywalk.compat import urlparse
+from flask_sillywalk.compat import urlparse
 
 
 __SWAGGERVERSION__ = "1.3"
