@@ -166,7 +166,7 @@ class SwaggerApiRegistry(object):
             nickname=nickname,
             notes=notes)
 
-        if api.resource not in self.app.view_functions:
+        if api.resource not in getattr(self.app, 'view_functions', {}):
             for fmt in SUPPORTED_FORMATS:
                 route = "{0}/{1}.{2}".format(self.basepath.rstrip("/"),
                                              api.resource, fmt)
