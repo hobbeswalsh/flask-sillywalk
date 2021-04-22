@@ -1,0 +1,22 @@
+<!doctype html>
+<head>
+<title>API {{ parameters.0.apiVersion }} Docs</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<h1>{% block title %}{% endblock %}</h1>
+{% for param in parameters %}
+    <table>
+        <tr>
+            <td>Api Version</td>
+            <td>Base Path</td>
+        </tr>
+        <tr>
+            <td>{{ param.apiVersion }}</td>
+            <td>{{ param.basePath }}</td>
+        <tr>
+    </table>
+{% endfor %}
+{% block body %}{% endblock %}
+</body>
+</html>

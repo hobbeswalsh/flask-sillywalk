@@ -1,0 +1,57 @@
+<!doctype html>
+<head>
+<title>API {{ parameters.0.apiVersion }} Docs</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% for a in apis %}
+    {% for key,value in a.items() %}
+        {% if (loop.index == 1 or loop.index == 2) %}
+            {% if loop.index == 1 %}
+                <h3><p>{{ value }}</p></h3>
+            {% endif %}
+            {% if loop.index == 2 %}
+                <p>{{ value }}</p>
+            {% endif %}
+        {% endif %}
+        {% if (loop.index == 3 or loop.index == 4) %}
+            {% if loop.index == 3 %}
+                <div class="method">
+                    {{ value }}
+                </div>
+            {% endif %}
+            {% if loop.index == 4 %}
+                <div class="path">
+                    {{ parameters.0.basePath }}{{ value }}
+                </div>
+            {% endif %}
+        {% else %}
+            {% if value | is_list %}
+                <div class="params grid">
+                    <table>
+                    {% for i in value %}
+                        {% if loop.index == 1 %}
+                            <thead>
+                                    <tr>
+                                    {% for ikey,ivalue in i.items() %}
+                                        <th>{{ ikey }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                        {% endif %}
+                            <tbody>
+                                <tr>
+                                    {% for ikey,ivalue in i.items() %}
+                                        <td>{{ ivalue }}</td>
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                    {% endfor %}
+                    </table>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+</body>
+</html>
